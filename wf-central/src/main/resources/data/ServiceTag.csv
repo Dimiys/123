@@ -1,5 +1,5 @@
 nID;sID;sName_UA;sName_RU;nID_ServiceTagType;nOrder;sLinkImage;sNote
-1;personalni_dokumenti;Персональні документи;Персональні документи;2;2;/wf/VAADIN/themes/activiti/img/services/social_care.svg;[*]
+1;personalni_dokumenti;Персональні документи;Персональні документи;2;3;/wf/VAADIN/themes/activiti/img/services/social_care.svg;[*]
 2;Family;Родина та знакові події;Родина та знакові події;2;1;/wf/VAADIN/themes/activiti/img/services/family_room.svg;
 10;Derzhavna_reyestratciya_prava_vlasnostі_na_neruhome_mayno;[Операції з майном] Державна реєстрація права власності на нерухоме майно;[Операції з майном] Державна реєстрація права власності на нерухоме майно;3;10;;[*]
 11;Dokumenty_dlia_oformlennia_pasporta_pri_zmіnі_MPP;[Закордонний паспорт] Документи для оформлення паспорта при зміні МПП;[Закордонний паспорт] Документи для оформлення паспорта при зміні МПП;3;10;;[*]
@@ -20,7 +20,7 @@ nID;sID;sName_UA;sName_RU;nID_ServiceTagType;nOrder;sLinkImage;sNote
 27;Vidacha_posvіdchen_reabіlіtovanim_gromadianam;[Посвідчення] Видача посвідчень реабілітованим громадянам;[Посвідчення] Видача посвідчень реабілітованим громадянам;3;10;;[*]
 28;Vihovannia_dytyny;[Діти] Виховання дитини;[Діти] Виховання дитини;3;10;;[*]
 29;Vyyizd_z_Ukrayiny_na_postiyne_mіstce_prozhivannia;[Громадянство та місце постійного проживання] Виїзд з України на постійне місце проживання;[Громадянство та місце постійного проживання] Виїзд з України на постійне місце проживання;3;10;;[*]
-3;SocHalp;Соціальна допомога;Соціальна допомога;2;3;/wf/VAADIN/themes/activiti/img/services/lifesaver.svg;
+3;SocHalp;Соціальна допомога;Соціальна допомога;2;2;/wf/VAADIN/themes/activiti/img/services/lifesaver.svg;
 30;Yak_dytyny_otrimati_pasport_gromadianina_Ukrayini;[Діти] Як дитині отримати паспорт громадянина України;[Діти] Як дитині отримати паспорт громадянина України;3;10;;[*]
 31;Yak_dytyny_otrimati_іndivіdualnii_podatkovii_nomer;[Діти] Як дитині отримати індивідуальний податковий номер;[Діти] Як дитині отримати індивідуальний податковий номер;3;10;;[*]
 32;Yak_obmіniati_pasport_u_razі_zmіni_prіzvishcha,_іmenі_abo_po_batkovі;[Паспорт громадянина України] Як обміняти паспорт у разі зміни прізвища, імені або по батькові;[Паспорт громадянина України] Як обміняти паспорт у разі зміни прізвища, імені або по батькові;3;10;;[*]
