@@ -16,7 +16,7 @@ nID;sName;sID;nID_Category;nOrder
 15;Реєстраційні дані;RegistrationsOrg;2;1
 16;Податки;Tax;1;6
 17;Транспорт;Transports_B;2;17
-19;Торгівля;Trade;2;14
+19;Підприємницька діяльність;pidpriyemnitska_diyalnist;2;14
 20;Родина;Family;1;7
 21;Взаємодія з державними органами;GovernmentOrg;2;16
 22;Соціальна допомога;SocHelp;1;2
