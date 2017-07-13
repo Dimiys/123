@@ -203,6 +203,15 @@ var all = {
     protocol: config.getProperty('sURLBackProxyRegionParts.protocol'),
     port: config.getProperty('sURLBackProxyRegionParts.port') || process.env.SSL_PORT
   },
+  eds: {
+    authorizationURL: config.getProperty('eds.authorizationURL'),
+    tokenURL: config.getProperty('eds.tokenURL'),
+    customerURL: config.getProperty('eds.customerURL'),
+    clientID: config.getProperty('eds.clientID'),
+    clientSecret: config.getProperty('eds.clientSecret'),
+    callbackURL: config.getProperty('eds.callbackURL'),
+    passReqToCallback: config.getProperty('eds.passReqToCallback')
+  },
 
   // List of user roles
   userRoles: ['guest', 'user', 'admin'],

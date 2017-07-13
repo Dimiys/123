@@ -8,5 +8,6 @@ require('./activiti/basic');
 var router = express.Router();
 
 router.use('/activiti', require('./activiti'));
+router.use('/eds', require('./eds'));
 
 module.exports = router;

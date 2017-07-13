@@ -10,7 +10,7 @@
   "env": {
     "sProfile_Application": "PROD",
     "NODE_TLS_REJECT_UNAUTHORIZED":"0",
-    "bCompile_Application": "TRUE",
+    "bCompile_Application": "FALSE",
     "bDebug_Application": "FALSE",
     "bTest": "TRUE",
 
@@ -39,6 +39,16 @@
       "sURL_BackProxy_Region": "https://office.kievcity.gov.ua:8444",
       "sKeyPath_BackProxy_Region": "cert/server.key",
       "sCertPath_BackProxy_Region": "cert/server.crt"
+    },
+
+    "eds": {
+      "authorizationURL": "https://auth.js.sign.eu.iit.com.ua/",
+      "tokenURL": "https://auth.js.sign.eu.iit.com.ua/get-access-token",
+      "customerURL": "https://auth.js.sign.eu.iit.com.ua/get-user-info",
+      "clientID": "U0000656581",
+      "clientSecret": "294c5b4cbeb537ab04c8111f6fa86aa6b29e5f15de521b556cda61ef505f6249",
+      "callbackURL": "https://localhost:8444/auth/eds/callback",
+      "passReqToCallback": true
     },
 
     "BackSession_Region":{
