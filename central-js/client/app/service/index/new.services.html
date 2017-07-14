@@ -173,12 +173,12 @@
                 </ul>
               </div>
 
-              <div ng-if="catalog.aService" class="results-ul">
-                <div ng-if="catalog.aService.length === 0">
+              <div  ng-if="searchPage.catalog.aService" class="results-ul">
+                <div ng-if="searchPage.catalog.aService.length === 0">
                   <h4>На жаль, за даним запитом результатів не знайдено.</h4>
                 </div>
                 <ul>
-                  <li ng-repeat="service in catalog.aService | orderBy: ['-nStatus', 'nOrder', 'sName']" style="list-style:none;">
+                  <li ng-repeat="service in searchPage.catalog.aService | orderBy: ['-nStatus', 'nOrder', 'sName']" style="list-style:none;">
                     <i class="icon-e-service-on"
                        ng-if="service.nStatus === 2"
                        title="Ця послуга доступна в електронній формі для одного, кількох або всіх регіонів">
@@ -194,8 +194,24 @@
                     <a ui-sref="index.service.general({'id': service.nID })" ng-click="goToService(service.nID)">{{service.sName}}</a>
                   </li>
                 </ul>
+                <ul ng-if="searchPage.pager.pages.length" class="pagination">
+                  <li ng-class="{disabled:searchPage.pager.currentPage === 1}">
+                    <a ng-click="searchPage.setPage(1)">Перша</a>
+                  </li>
+                  <li ng-class="{disabled:searchPage.pager.currentPage === 1}">
+                    <a ng-click="searchPage.setPage(searchPage.pager.currentPage - 1)">Попередня</a>
+                  </li>
+                  <li ng-repeat="page in searchPage.pager.pages" ng-class="{active:searchPage.pager.currentPage === searchPage.pager.page}">
+                    <a ng-click="searchPage.setPage(page)">{{page}}</a>
+                  </li>
+                  <li ng-class="{disabled:searchPage.pager.currentPage === searchPage.pager.totalPages}">
+                    <a ng-click="searchPage.setPage(searchPage.pager.currentPage + 1)">Наступна</a>
+                  </li>
+                  <li ng-class="{disabled:searchPage.pager.currentPage === searchPage.pager.totalPages}">
+                    <a ng-click="searchPage.setPage(searchPage.pager.totalPages)">Остання</a>
+                  </li>
+                </ul>
               </div>
-              <!--<a href="#" class="add-service more-search-results">Завантажити більше</a>-->
             </div>
           </div>
             <div class="row category__item-subscribe">
