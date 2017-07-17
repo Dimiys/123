@@ -159,16 +159,34 @@
 
             <div class="col-sm-12 catalog-with-search-result search-results">
 
-              <span class="results-count">За запитом <span>{{catalog.aService.sName}}</span> знайдено: <span>{{catalog.aService.length}}</span> результатів</span>
+              <span ng-if="!searchPage.catalog.aService && searchPage.catalog.length>0" class="results-count">За запитом <span>{{searchPage.sSearch}}</span> знайдено: <span>{{searchPage.catalog.length}}</span> результатів</span>
+              <span ng-if="searchPage.catalog.aService && searchPage.catalog.aService.length>0" class="results-count">За запитом <span>{{searchPage.sSearch}}</span> знайдено: <span>{{searchPage.catalog.aService.length}}</span> результатів</span>
 
-              <div ng-repeat="category in catalog" ng-if="!catalog.aService">
+              <div ng-if="!searchPage.catalog.aService">
 
-                <div ng-if="catalog.length === 0">
+                <div ng-if="searchPage.catalog.length === 0">
                   <h4>На жаль, за даним запитом результатів не знайдено.</h4>
                 </div>
-                <ul ng-repeat="subcategory in category.aSubcategory">
-                  <li ng-repeat="service in subcategory.aService | orderBy: 'nOrder'" style="list-style-type:square; color: #dddddd">
+                <ul>
+                  <li ng-repeat="service in searchPage.catalog | orderBy: 'nOrder'" style="list-style-type:square; color: #dddddd">
                     <a ui-sref="index.service.general({'id': service.nID })" ng-click="goToService(service.nID)">{{service.sName}}</a>
+                  </li>
+                </ul>
+                <ul ng-if="searchPage.pagerBusiness.pages.length && searchPage.catalog.length > 20" class="pagination">
+                  <li ng-class="{disabled:searchPage.pagerBusiness.currentPage === 1}">
+                    <a ng-click="searchPage.setPageBusiness(1)">Перша</a>
+                  </li>
+                  <li ng-class="{disabled:searchPage.pagerBusiness.currentPage === 1}">
+                    <a ng-click="searchPage.setPageBusiness(searchPage.pagerBusiness.currentPage - 1)">Попередня</a>
+                  </li>
+                  <li ng-repeat="page in searchPage.pagerBusiness.pages" ng-class="{active:searchPage.pagerBusiness.currentPage === searchPage.pagerBusiness.page}">
+                    <a ng-click="searchPage.setPageBusiness(page)">{{page}}</a>
+                  </li>
+                  <li ng-class="{disabled:searchPage.pagerBusiness.currentPage === searchPage.pagerBusiness.totalPages}">
+                    <a ng-click="searchPage.setPageBusiness(searchPage.pagerBusiness.currentPage + 1)">Наступна</a>
+                  </li>
+                  <li ng-class="{disabled:searchPage.pagerBusiness.currentPage === searchPage.pagerBusiness.totalPages}">
+                    <a ng-click="searchPage.setPageBusiness(searchPage.pagerBusiness.totalPages)">Остання</a>
                   </li>
                 </ul>
               </div>
@@ -194,7 +212,7 @@
                     <a ui-sref="index.service.general({'id': service.nID })" ng-click="goToService(service.nID)">{{service.sName}}</a>
                   </li>
                 </ul>
-                <ul ng-if="searchPage.pager.pages.length" class="pagination">
+                <ul ng-if="searchPage.pager.pages.length && searchPage.catalog.aService.length > 20" class="pagination">
                   <li ng-class="{disabled:searchPage.pager.currentPage === 1}">
                     <a ng-click="searchPage.setPage(1)">Перша</a>
                   </li>
