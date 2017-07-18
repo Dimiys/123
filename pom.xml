@@ -88,7 +88,7 @@
                 <sRevision>${sSubBranch}</sRevision>
                 <sRevisionLibPostfix>-RELEASE</sRevisionLibPostfix>
                 <sRevisionLibPostfixBase>-RELEASE</sRevisionLibPostfixBase>
-                <sRevisionSubPath>/prod</sRevisionSubPath>
+                <sRevisionSubPath></sRevisionSubPath>
             </properties>
         </profile>
     </profiles>
