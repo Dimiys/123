@@ -11,8 +11,8 @@
     <version>1.0-SNAPSHOT</version>
  <profiles>
 
-        <!--profile>
-            <id>alpha</id>
+        <profile>
+            <!--id>alpha</id>
          
             <properties>
                 <sRevisionVersion>1.0.0</sRevisionVersion>
@@ -76,8 +76,8 @@
                 <sRevisionLibPostfix>-SNAPSHOT</sRevisionLibPostfix>
                 <sRevisionLibPostfixBase>-SNAPSHOT</sRevisionLibPostfixBase>
                 <sRevisionSubPath></sRevisionSubPath>
-            </properties>
-        </profile-->
+            </properties-->
+        </profile>
         <profile>
             <id>release</id>
                     <activation>
