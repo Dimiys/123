@@ -14,10 +14,7 @@ angular.module('app')
     $scope.catalogAll = [];
 
     $scope.$watch('catalogAll',function (newVal, oldVal) {
-      // console.log($state.is('index.oldbusiness'));
-      // console.log($state.current);
-      // console.log($scope.sSearch);
-      if(!!$scope.sSearch == true){
+      if(!!$scope.sSearch == true && $scope.sSearch.length >= 3){
         if ($state.is('index.oldbusiness')) {
           $scope.setPageBusiness(1);
         } else {
@@ -198,7 +195,12 @@ angular.module('app')
       }
 
       // get pager object from service
-      var arr = $scope.catalogAll.aService;
+      var arr = [];
+      if($scope.catalogAll.aService){
+        arr = $scope.catalogAll.aService;
+        console.log(arr);
+      }
+      console.log(arr);
       $scope.pager = GetPager(arr.length, page, 20);
       // get current page of items
       $scope.catalog.aService = arr.slice($scope.pager.startIndex, $scope.pager.endIndex + 1);
