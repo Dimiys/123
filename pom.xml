@@ -79,8 +79,8 @@
                 <sRevisionLibPostfixBase>-SNAPSHOT</sRevisionLibPostfixBase>
                 <sRevisionSubPath></sRevisionSubPath>
             </properties>
-        </profile>
-        <profile-->
+        </profile-->
+        <profile>
             <id>release</id>
             <properties>
                 <sRevisionVersion>1.0.0</sRevisionVersion>
