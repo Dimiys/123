@@ -90,6 +90,7 @@
                 <sRevisionLibPostfix>-RELEASE</sRevisionLibPostfix>
                 <sRevisionLibPostfixBase>-RELEASE</sRevisionLibPostfixBase>
                 <sRevisionSubPath>/prod</sRevisionSubPath>
+                     </properties>
            </profile>
     </profiles>
 
