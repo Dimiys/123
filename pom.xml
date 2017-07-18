@@ -86,7 +86,7 @@
             <properties>
                 <sRevisionVersion>1.0.0</sRevisionVersion>
                 <sRevisionVersionBase>1.0.0</sRevisionVersionBase>
-                <sRevision>${sSubBranch}</sRevision>
+                <sRevision></sRevision>
                 <sRevisionLibPostfix>-RELEASE</sRevisionLibPostfix>
                 <sRevisionLibPostfixBase>-RELEASE</sRevisionLibPostfixBase>
                 <sRevisionSubPath>/prod</sRevisionSubPath>
