@@ -13,9 +13,7 @@
 
         <profile>
             <id>alpha</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
+         
             <properties>
                 <sRevisionVersion>1.0.0</sRevisionVersion>
                 <sRevisionVersionBase>1.0.0</sRevisionVersionBase>
@@ -82,6 +80,9 @@
         </profile>
         <profile>
             <id>release</id>
+                    <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <properties>
                 <sRevisionVersion>1.0.0</sRevisionVersion>
                 <sRevisionVersionBase>1.0.0</sRevisionVersionBase>
