@@ -11,7 +11,7 @@
     <version>1.0-SNAPSHOT</version>
  <profiles>
 
-        <!-- <profile>
+        <!-- profile>
             <id>alpha</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
@@ -80,7 +80,7 @@
                 <sRevisionSubPath></sRevisionSubPath>
             </properties>
         </profile>
-        <profile> -->
+        <profile-->
             <id>release</id>
             <properties>
                 <sRevisionVersion>1.0.0</sRevisionVersion>
