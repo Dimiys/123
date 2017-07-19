@@ -201,7 +201,7 @@ angular.module('app')
         console.log(arr);
       }
       console.log(arr);
-      $scope.pager = GetPager(arr.length, page, 10);
+      $scope.pager = GetPager(arr.length, page, 20);
       // get current page of items
       $scope.catalog.aService = arr.slice($scope.pager.startIndex, $scope.pager.endIndex + 1);
     }
@@ -224,7 +224,7 @@ angular.module('app')
           })
         }
       });
-      $scope.pagerBusiness = GetPager(arr.length, page, 10);
+      $scope.pagerBusiness = GetPager(arr.length, page, 20);
       // get current page of items
       $scope.catalog = arr.slice($scope.pagerBusiness.startIndex, $scope.pagerBusiness.endIndex + 1);
     }
