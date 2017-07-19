@@ -172,7 +172,7 @@
                     <a ui-sref="index.service.general({'id': service.nID })" ng-click="goToService(service.nID)">{{service.sName}}</a>
                   </li>
                 </ul>
-                <ul ng-if="searchPage.pagerBusiness.pages.length && searchPage.catalog.length > 20" class="pagination">
+                <ul ng-if="searchPage.pagerBusiness.pages.length" class="pagination">
                   <li ng-class="{disabled:searchPage.pagerBusiness.currentPage === 1}">
                     <a ng-click="searchPage.setPageBusiness(1)">Перша</a>
                   </li>
@@ -212,7 +212,7 @@
                     <a ui-sref="index.service.general({'id': service.nID })" ng-click="goToService(service.nID)">{{service.sName}}</a>
                   </li>
                 </ul>
-                <ul ng-if="searchPage.pager.pages.length && searchPage.catalog.aService.length > 20" class="pagination">
+                <ul ng-if="searchPage.pager.pages.length" class="pagination">
                   <li ng-class="{disabled:searchPage.pager.currentPage === 1}">
                     <a ng-click="searchPage.setPage(1)">Перша</a>
                   </li>
