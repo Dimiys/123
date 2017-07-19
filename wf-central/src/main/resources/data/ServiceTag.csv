@@ -1,6 +1,6 @@
 nID;sID;sName_UA;sName_RU;nID_ServiceTagType;nOrder;sLinkImage;sNote
-1;personalni_dokumenti;Персональні документи;Персональні документи;2;2;/wf/VAADIN/themes/activiti/img/services/social_care.svg;[*]
-2;Family;Родина та знакові події;Родина та знакові події;2;1;/wf/VAADIN/themes/activiti/img/services/family_room.svg;
+1;personalni_dokumenti;Персональні документи;Персональні документи;2;1;/wf/VAADIN/themes/activiti/img/services/social_care.svg;[*]
+2;Family;Родина та знакові події;Родина та знакові події;2;2;/wf/VAADIN/themes/activiti/img/services/family_room.svg;
 10;Derzhavna_reyestratciya_prava_vlasnostі_na_neruhome_mayno;[Операції з майном] Державна реєстрація права власності на нерухоме майно;[Операції з майном] Державна реєстрація права власності на нерухоме майно;3;10;;[*]
 11;Dokumenty_dlia_oformlennia_pasporta_pri_zmіnі_MPP;[Закордонний паспорт] Документи для оформлення паспорта при зміні МПП;[Закордонний паспорт] Документи для оформлення паспорта при зміні МПП;3;10;;[*]
 12;Dovіdki_pro_sklad_sіmyi;[Склад сім'ї] Довідки про склад сім'ї;[Склад сім'ї] Довідки про склад сім'ї;3;10;;[*]
