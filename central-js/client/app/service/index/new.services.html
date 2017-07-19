@@ -159,8 +159,8 @@
 
             <div class="col-sm-12 catalog-with-search-result search-results">
 
-              <span ng-if="!searchPage.catalog.aService && searchPage.catalog.length>0" class="results-count">За запитом <span>{{searchPage.sSearch}}</span> знайдено: <span>{{searchPage.catalog.length}}</span> результатів</span>
-              <span ng-if="searchPage.catalog.aService && searchPage.catalog.aService.length>0" class="results-count">За запитом <span>{{searchPage.sSearch}}</span> знайдено: <span>{{searchPage.catalog.aService.length}}</span> результатів</span>
+              <span ng-if="!searchPage.catalog.aService && searchPage.catalog.length>0" class="results-count">За запитом <span>{{searchPage.sSearch}}</span> знайдено: <span>{{searchPage.catalogCounter}}</span> результатів</span>
+              <span ng-if="searchPage.catalog.aService && searchPage.catalog.aService.length>0" class="results-count">За запитом <span>{{searchPage.sSearch}}</span> знайдено: <span>{{searchPage.catalogCounter}}</span> результатів</span>
 
               <div ng-if="!searchPage.catalog.aService">
 
