@@ -321,3 +321,6 @@ nID;nID_Subject;nID_SubjectHumanIdType;sSB;sINN;sPassportSeria;sPassportNumber;s
 314;637;0;NULL;NULL;NULL;NULL;NULL;Начальник управління;HR;NULL;NULL;NULL
 315;638;0;NULL;NULL;NULL;NULL;NULL;Начальник;служби безпеки;NULL;NULL;NULL
 316;639;0;NULL;NULL;NULL;NULL;NULL;Начальник профільного;підрозділу;NULL;NULL;NULL
+317;640;0;NULL;NULL;NULL;NULL;NULL;Іван Іванович;Барсуков;NULL;NULL;NULL
+318;641;0;NULL;NULL;NULL;NULL;NULL;Анна Іванівна;Белкіна;NULL;NULL;NULL
+319;642;0;NULL;NULL;NULL;NULL;NULL;Микола Іванович;Зайцев;NULL;NULL;NULL
