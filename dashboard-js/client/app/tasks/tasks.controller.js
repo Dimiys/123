@@ -8,14 +8,22 @@
   tasksCtrl.$inject = [
     '$scope', 'tasks', 'processes', 'Modal', 'identityUser', '$localStorage', '$filter', 'lunaService',
     'taskFilterService', 'defaultSearchHandlerService', '$rootScope',
-    '$stateParams', '$q', '$timeout', '$state', 'tasksStateModel', 'stateModel', 'Auth'
+    '$stateParams', '$q', '$timeout', '$state', 'tasksStateModel', 'stateModel', 'Auth', 'iGovNavbarHelper', 'snapRemote', '$http'
   ];
   function tasksCtrl($scope, tasks, processes, Modal, identityUser, $localStorage, $filter, lunaService,
                      taskFilterService, defaultSearchHandlerService, $rootScope,
-                     $stateParams, $q, $timeout, $state, tasksStateModel, stateModel, Auth) {
+                     $stateParams, $q, $timeout, $state, tasksStateModel, stateModel, Auth, iGovNavbarHelper, snapRemote, $http) {
+
+    $http.get('/api/env/get-env-config').success(function (data) {
+      $scope.ProjectRegion_MainPage_bTasksOnly = data.oOrganisation.ProjectRegion_MainPage_bTasksOnly;
+      console.log($scope.ProjectRegion_MainPage_bTasksOnly);
+    });
 
     $scope.tasks = null;
     $scope.sSelectedTask = $stateParams.type;
+    $scope.iGovNavbarHelper = iGovNavbarHelper;
+    iGovNavbarHelper.loadTaskCounters();
+    iGovNavbarHelper.loadTaskCounters('documents');
 
     $scope.printModalState = {show: false}; // wrapping in object required for 2-way binding
     $scope.taskDefinitions = taskFilterService.getTaskDefinitions();
@@ -94,27 +102,27 @@
     }
 
     $scope.startFilter = function () {
-      if($scope.fieldFilter && $scope.fieldFilter.length !== 0) {
+      if ($scope.fieldFilter && $scope.fieldFilter.length !== 0) {
         var defer = $q.defer();
         var filters = [];
         angular.forEach($scope.fieldFilter, function (item) {
           var obj = item.select;
-          if(item.enum.value) {
+          if (item.enum.value) {
             switch (item.enum.value) {
               case 0:
-                obj.sValue = item.string+"*";
+                obj.sValue = item.string + "*";
                 break;
               case 1:
-                obj.sValue = "*"+item.string+"*";
+                obj.sValue = "*" + item.string + "*";
                 break;
               case 2:
-                obj.sValue = "*"+item.string;
+                obj.sValue = "*" + item.string;
                 break;
               case 3:
                 obj.sValue = item.string;
                 break;
             }
-          } else if(item.select !== "" && item.string !== ""){
+          } else if (item.select !== "" && item.string !== "") {
             obj.sValue = item.string;
           } else {
             return
@@ -126,14 +134,14 @@
         tasks.list($stateParams.type, data)
           .then(function (oResult) {
             try {
-              if (oResult.data.code) {
-                var e = new Error(oResult.data.message);
-                e.name = oResult.data.code;
+              if (oResult.aoTaskDataVO.code) {
+                var e = new Error(oResult.aoTaskDataVO.message);
+                e.name = oResult.aoTaskDataVO.code;
                 throw e;
               }
 
-              if (oResult.data !== null && oResult.data !== undefined) {
-                var aTaskFiltered = _.filter(oResult.data, function (oTask) {
+              if (oResult.aoTaskDataVO !== null && oResult.aoTaskDataVO !== undefined) {
+                var aTaskFiltered = _.filter(oResult.aoTaskDataVO, function (oTask) {
                   return oTask.endTime !== null;
                 });
                 $scope.filteredTasks = [];
@@ -162,7 +170,7 @@
     };
 
     var filterLoadedTasks = function () {
-      $scope.filteredTasks = taskFilterService.getFilteredTasks($scope.tasks, $scope.model);
+      $scope.filteredTasks = $rootScope.tasksList = taskFilterService.getFilteredTasks($scope.tasks, $scope.model);
 
       $timeout(function () {
         // trigger scroll event to load more tasks
@@ -248,20 +256,19 @@
 
       $scope.tasksLoading = true;
 
-      if($stateParams.type !== 'ecp')
         tasks.list($stateParams.type, data)
           .then(function (oResult) {
             try {
-              if (oResult.data.code) {
-                var e = new Error(oResult.data.message);
-                e.name = oResult.data.code;
+              if (oResult.aoTaskDataVO.code) {
+                var e = new Error(oResult.aoTaskDataVO.message);
+                e.name = oResult.aoTaskDataVO.code;
 
                 throw e;
               }
 
-              if (oResult.data !== null && oResult.data !== undefined) {
+              if (oResult.aoTaskDataVO !== null && oResult.aoTaskDataVO !== undefined) {
                 // build tasks array
-                var aTaskFiltered = _.filter(oResult.data, function (oTask) {
+                var aTaskFiltered = _.filter(oResult.aoTaskDataVO, function (oTask) {
                   return oTask.endTime !== null;
                 });
                 if (!$scope.tasks)
@@ -289,7 +296,7 @@
             $scope.tasksLoading = false;
           });
 
-        return defer.promise;
+      return defer.promise;
     };
 
     $scope.applyTaskFilter = function () {
@@ -377,14 +384,13 @@
      * @param {string} status Status to check
      * @returns {boolean} True if task is in status otherwise false
      */
-    $scope.hasTaskStatus = function(task, status) {
+    $scope.hasTaskStatus = function (task, status) {
       var saTaskStatusVarData = getTaskVariable(task.variables, 'saTaskStatus');
       return hasTaskStatus(saTaskStatusVarData, status);
     };
 
     $scope.getTaskTitle = function (task) {
-      return '№' + task.processInstanceId + lunaService.getLunaValue(task.processInstanceId)
-        + ' ' + $scope.getProcessName(task) + ' | ' + task.name;
+      return '(' + task.processInstanceId + lunaService.getLunaValue(task.processInstanceId) + ') ' + task.name;
     };
 
     $scope.getTaskDateTimeTitle = function (task) {
@@ -433,9 +439,9 @@
         else
           initDefaultTaskSelection();
         //?
-          // loadNextTasksPage().then(function (nextTasks) {
-          //   updateTaskSelection(nextTasks, nID_Task);
-          // });
+        // loadNextTasksPage().then(function (nextTasks) {
+        //   updateTaskSelection(nextTasks, nID_Task);
+        // });
       } else if ($state.current.name != 'tasks.typeof.view')
         initDefaultTaskSelection();
     };
@@ -443,8 +449,8 @@
     var initDefaultTaskSelection = function () {
       if ($scope.selectedTask)
         $scope.selectTask($scope.selectedTask);
-      else if ($scope.filteredTasks && $scope.filteredTasks[0])
-        $scope.selectTask($scope.filteredTasks[0]);
+      // else if ($scope.filteredTasks && $scope.filteredTasks[0])
+      //   $scope.selectTask($scope.filteredTasks[0]);
     };
 
     var defaultErrorHandler = function (response, msgMapping) {
@@ -470,18 +476,18 @@
       localStorage.setItem(name, JSON.stringify(item));
     };
 
-    $scope.filterFieldsOptions = [{name:"Починаючи з",value:0},
-                                  {name:"З присутністю",value:1},
-                                  {name:"Закінчуючи на",value:2},
-                                  {name:"Дорівнює",value:3}];
+    $scope.filterFieldsOptions = [{name: "Починаючи з", value: 0},
+      {name: "З присутністю", value: 1},
+      {name: "Закінчуючи на", value: 2},
+      {name: "Дорівнює", value: 3}];
     $scope.selectedFieldFilterValue = $scope.filterFieldsOptions[0];
 
     function resetFieldFilter() {
-      $scope.fieldFilter = [{select:'', string:'', enum:$scope.selectedFieldFilterValue}];
+      $scope.fieldFilter = [{select: '', string: '', enum: $scope.selectedFieldFilterValue}];
     }
 
     var filterFromStorage = localStorage.getItem('fieldFilter');
-    if(filterFromStorage !== null) {
+    if (filterFromStorage !== null) {
       $scope.fieldFilter = JSON.parse(filterFromStorage);
     } else {
       resetFieldFilter()
@@ -489,7 +495,7 @@
 
     var addFilter = function () {
       saveItemToLocalStorage('fieldFilter', $scope.fieldFilter);
-      if($scope.fieldFilter[$scope.fieldFilter.length-1].select !== "") {
+      if ($scope.fieldFilter[$scope.fieldFilter.length - 1].select !== "") {
         $scope.fieldFilter.push({select: '', string: '', enum: $scope.selectedFieldFilterValue});
       }
     };
@@ -510,14 +516,90 @@
       saveItemToLocalStorage('fieldFilter', $scope.fieldFilter);
     };
 
+    function toggleMenu(status) {
+      if (typeof status === 'boolean') {
+        if (status) {
+          $scope.isMenuOpened = true;
+          snapRemote.open('left');
+        } else {
+          $scope.isMenuOpened = false;
+          snapRemote.close();
+        }
+        localStorage.setItem('menu-status', JSON.stringify(status));
+      }
+    }
+
+    var menuStatus = localStorage.getItem('menu-status');
+    if (menuStatus) {
+      var status = JSON.parse(menuStatus);
+      toggleMenu(status);
+    } else {
+      $scope.isMenuOpened = false;
+      snapRemote.close();
+    }
+
+    $rootScope.toggleMenu = function () {
+      $scope.isMenuOpened = !$scope.isMenuOpened;
+      localStorage.setItem('menu-status', JSON.stringify($scope.isMenuOpened));
+    };
+
+    (function selectedTab() {
+      if(('selfAssigned | tickets | unassigned | all | finished').indexOf($stateParams.type) > -1) {
+        $scope.tabMenu = 'tasks';
+      } else {
+        $scope.tabMenu = 'documents';
+      }
+    })();
+
+    $scope.tabMenuChange = function (param) {
+      $scope.tabMenu = param;
+    };
+
+    $scope.isVisible = function (menuType) {
+      if (menuType === 'all') {
+        return Auth.isLoggedIn() && Auth.hasOneOfRoles('manager', 'admin', 'kermit');
+      }
+      if (menuType === 'finished') {
+        return Auth.isLoggedIn() && Auth.hasOneOfRoles('manager', 'admin', 'kermit', 'supervisor');
+      }
+      return Auth.isLoggedIn();
+    };
+
+    $scope.currentTab = function () {
+      for (var i = 0; i < iGovNavbarHelper.menus.length; i++) {
+        if (iGovNavbarHelper.menus[i].tab === $stateParams.type) {
+          return iGovNavbarHelper.menus[i].title;
+        }
+      }
+
+      for (var o = 0; o < iGovNavbarHelper.documentsMenus.length; o++) {
+        if (iGovNavbarHelper.documentsMenus[o].tab === $stateParams.type) {
+          return iGovNavbarHelper.documentsMenus[o].title;
+        }
+      }
+    };
+    snapRemote.getSnapper().then(function (snapper) {
+      snapper.on('animated', function () {
+        if (snapper.state().state === 'closed') {
+          $scope.isMenuOpened = false;
+          $scope.$apply();
+        } else if (snapper.state().state === 'left') {
+          $scope.isMenuOpened = true;
+          $scope.$apply();
+        }
+      });
+    });
+
+
     function getFilterFieldsList() {
       var user = Auth.getCurrentUser().id;
-        tasks.getFilterFieldsList(user).then(function (res) {
-          if (Array.isArray(res) && res.length > 0) {
-            $scope.fieldList = res;
-          }
-        })
+      tasks.getFilterFieldsList(user).then(function (res) {
+        if (Array.isArray(res) && res.length > 0) {
+          $scope.fieldList = res;
+        }
+      })
     }
+
     getFilterFieldsList();
   }
 

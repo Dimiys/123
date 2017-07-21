@@ -189,6 +189,34 @@ angular.module('app').controller('FooterController', function ($scope) {
       height: 50
     }
 
+    ,{
+      url: 'http://iati.com.ua',
+      alt: 'iati.com.ua',
+      image: 'assets/images/ads/iati.png',
+      height: 50
+    }
+
+    ,{
+      url: 'http://www.tcl.eu',
+      alt: 'www.tcl.eu',
+      image: 'assets/images/ads/TCL.png',
+      height: 50
+    }
+
+    ,{
+      url: 'http://www.hilton.net.ua/',
+      alt: 'www.hilton.net.ua/',
+      image: 'assets/images/ads/HILTON.png',
+      height: 50
+    }
+
+    ,{
+      url: 'https://opendatabot.com/',
+      alt: 'https://opendatabot.com/',
+      image: 'assets/images/ads/opendatabot.png',
+      height: 50
+    }
+
   ];
 
   function randomizeIndexes(indexes, item, arr) {

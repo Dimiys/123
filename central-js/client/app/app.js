@@ -31,13 +31,16 @@ angular.module('order', ['appBoilerPlate']);
 angular.module('about', ['appBoilerPlate']);
 angular.module('feedback', ['appBoilerPlate']);
 
+angular.module('popUp', ['ui.bootstrap']);
+
 angular.module('app', [
   'documents',
   'auth',
   'journal',
   'order',
   'about',
-  'feedback'
+  'feedback',
+  'popUp'
 ]).config(function ($urlRouterProvider, $locationProvider, datepickerConfig, datepickerPopupConfig) {
   $urlRouterProvider.otherwise('/');
   $locationProvider.html5Mode(true);

@@ -10,6 +10,10 @@
     "sProfile_Application": "development",
     "bDebug_Application": "TRUE",
     "bTest": "TRUE",
+    "ProjectRegion_LogonPage_sName": "Backoffice",
+    "ProjectRegion_LogonPage_sNote": "Administrative Interface",
+    "ProjectRegion_LogonPage_sContacts": "Support:",
+    "ProjectRegion_MainPage_bTasksOnly": "FALSE",
 
     "NODE_TLS_REJECT_UNAUTHORIZED":"0",
 
@@ -33,7 +37,7 @@
       "sLogin_Back_Central": "system",
       "sPassword_Back_Central": "system"
     },
-    
+
     "BackProxy_Region": {
       "sURL_BackProxy_Region": "http://localhost:9001",
       "sKeyPath_BackProxy_Region": "/sybase/cert/server.key",

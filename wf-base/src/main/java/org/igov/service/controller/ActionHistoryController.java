@@ -48,8 +48,11 @@ public class ActionHistoryController {
             @ApiParam(value = "новые данные после редактирвоание", required = false) @RequestParam(value = "newData", required = false) String newData,
             @ApiParam(value = "старые данные до редактирвоания", required = false) @RequestParam(value = "oldData", required = false) String oldData,
             @ApiParam(value = "ид бп созданного документа (для вызова субпроцесса)", required = false) @RequestParam(value = "new_BP_ID", required = false) String new_BP_ID,
-            @ApiParam(value = "логин или ФИО", required = false) @RequestParam(value = "sLogin", required = false) String sLogin)
-    {
+            @ApiParam(value = "логин или ФИО", required = false) @RequestParam(value = "sLogin", required = false) String sLogin,
+            @ApiParam(value = "логин", required = false) @RequestParam(value = "sLoginNew", required = false) String sLoginNew,
+            @ApiParam(value = "ордер связанного документа", required = false) @RequestParam(value = "sID_Order_Link", required = false) String sID_Order_Link,
+            @ApiParam(value = "ФИО", required = false) @RequestParam(value = "sName", required = false) String sName
+        ){
         LOG.info("addHistoryEvent was started with params: sID_Order: {} nID_Subject : {} sUserTaskName: {} "
                 + "nID_Service: {} nID_ServiceData: {} nID_ServiceData: {} nID_Region: {} sID_UA: {} soData: {} "
                 + "sToken: {} sHead: {} sBody: nID_Proccess_Feedback: {} nID_Proccess_Escalation: {} nID_StatusType: {}",
@@ -76,6 +79,9 @@ public class ActionHistoryController {
                 oldData,
                 sLogin,
                 new_BP_ID,
+                sLoginNew,
+                sName,
+                sID_Order_Link,
                 true,
                 true,
                 false

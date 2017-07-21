@@ -26,7 +26,8 @@ angular.module('dashboardJsApp', [
   'ea.treeview',
   'cryptoPlugin',
   'textAngular',
-  'angularSpectrumColorpicker'
+  'angularSpectrumColorpicker',
+  'snap'
 ]).config(function($urlRouterProvider, $locationProvider, $compileProvider) {
   $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|file|blob):/);
   $urlRouterProvider
@@ -65,4 +66,12 @@ angular.module('dashboardJsApp', [
       }
     });
   }
-]);
+]).config(['snapRemoteProvider',
+  function (snapRemoteProvider) {
+    if(window.innerWidth >= 992) {
+      snapRemoteProvider.globalOptions = { touchToDrag: false, tapToClose: false }
+    } else {
+      snapRemoteProvider.globalOptions = { touchToDrag: true, tapToClose: true }
+    }
+
+  }]);

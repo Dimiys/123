@@ -3,6 +3,7 @@ package org.igov.service.controller;
 import org.igov.model.process.ProcessSubject;
 import org.igov.model.process.ProcessSubjectResult;
 import org.igov.model.process.ProcessSubjectResultTree;
+import org.igov.model.process.ProcessSubjectTask;
 import org.igov.service.business.process.ProcessSubjectService;
 import org.igov.service.business.process.ProcessSubjectTreeService;
 import org.igov.service.business.process.ProcessSubjectTaskService;
@@ -17,14 +18,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
 import java.util.List;
-import java.util.Map;
+
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
 
 import org.json.simple.parser.ParseException;
 
@@ -135,7 +137,7 @@ public class ProcessSubjectController {
         }
         return processSubjectResult;
     }
-
+    /*
     @ApiOperation(value = "Задать статус процесса", notes = "##### Пример:\n"
             + "https://alpha.test.region.igov.org.ua/wf/service/subject/process/setProcessSubjectStatus?snID_Process_Activiti=MJU_Dnipro&nID_ProcessSubjectStatus=1 \n")
     @RequestMapping(value = "/setProcessSubjectStatus", method = RequestMethod.GET)
@@ -151,7 +153,7 @@ public class ProcessSubjectController {
             LOG.error("FAIL: ", e);
         }
         return processSubjectResult;
-    }
+    }*/
 
     @ApiOperation(value = "Сохранить процесс", notes = "##### Пример:\n"
             + "https://alpha.test.region.igov.org.ua/wf/service/subject/process/setProcessSubjectDatePlan?snID_Process_Activiti=MJU_Dnipro&sDatePlan=2016-11-19 \n")
@@ -180,19 +182,89 @@ public class ProcessSubjectController {
         return oProcessSubjectTaskService.getProcessSubjectLoginsWithoutTask(snID_Process_Activiti, sFilterLoginRole);
     }
     
-    /*
+    @ApiOperation(value = "Вернуть объект ProcessSubjectTask", notes = "##### Пример:\n"
+            + "https://alpha.test.region.igov.org.ua/wf/service/subject/process/getProcessSubjectTask?snID_Process_Activiti=33267773 \n")
+    @RequestMapping(value = "/getProcessSubjectTask", method = RequestMethod.GET)
+    @ResponseBody
+    public List<ProcessSubjectTask> getProcessSubjectTask(@ApiParam(value = "ид процесса", required = true) @RequestParam(value = "snID_Process_Activiti") String snID_Process_Activiti,
+            @ApiParam(value = "глубина", required = false) @RequestParam(value = "nDeepProcessSubjectTask", required = false) Long nDeepProcessSubjectTask) throws RecordInmemoryException, ParseException
+    {   
+        if(nDeepProcessSubjectTask != null){
+            nDeepProcessSubjectTask = 1L;
+        }
+        
+        return oProcessSubjectTaskService.getProcessSubjectTask(snID_Process_Activiti, nDeepProcessSubjectTask);
+    }
+
+    
+    
     @ApiOperation(value = "Задать статус процесса ", notes = "##### Пример:\n" 
             + "https://alpha.test.region.igov.org.ua/wf/service/subject/process/setProcessSubjectStatus?nID_ProcessSubjectStatus=1&snID_Task_Activiti=33042597&sLogin=justice_common \n")
-    @RequestMapping(value = "/setProcessSubjectStatus", method = RequestMethod.POST, produces = "application/json; charset=utf-8")
+    @RequestMapping(value = "/setProcessSubjectStatus", method = RequestMethod.GET)
     @ResponseBody
     public ProcessSubject setProcessSubjectStatus(
-                @ApiParam(value = "ид процесса", required = true) @RequestParam(value = "sID_ProcessSubjectStatus", required = true) String sID_ProcessSubjectStatus,
-                @ApiParam(value = "ид таски", required = true) @RequestParam(value = "snID_Task_Activiti", required = true) String snID_Task_Activiti,
-                @ApiParam(value = "логин", required = true) @RequestParam(value = "sLogin", required = true) String sLogin,
-                @ApiParam(value = "sText", required = false) @RequestParam(value = "sText", required = false) String sText,
-                @ApiParam(value = "JSON-объект с данными", required = true) @RequestBody Map<String, Object> mJsonBody
+                @ApiParam(value = "Статус", required = true) @RequestParam(value = "sID_ProcessSubjectStatus", required = true) String sID_ProcessSubjectStatus,
+                @ApiParam(value = "Ид таски", required = true) @RequestParam(value = "snID_Task_Activiti", required = true) String snID_Task_Activiti,
+                @ApiParam(value = "Логин контролирующего", required = false) @RequestParam(value = "sLoginController", required = false) String sLoginController,
+                @ApiParam(value = "Логин исполнителя", required = false) @RequestParam(value = "sLoginExecutor", required = false) String sLoginExecutor,
+                @ApiParam(value = "Текстовое поле", required = false) @RequestParam(value = "sText", required = false) String sText,
+                @ApiParam(value = "Дата на которую нужно перенести срок", required = false) @RequestParam(value = "sDatePlaneNew", required = false) String sDatePlaneNew
     ) {
-
-        return processSubjectService.setProcessSubjectStatus(sID_ProcessSubjectStatus, snID_Task_Activiti, sLogin, sText, sDatePlaneNew);
-    }*/
+        if (sLoginController == null && sLoginExecutor == null) {
+        
+            throw new RuntimeException("Impossible to set status, because login is absent");
+        }
+                
+        return processSubjectService.setProcessSubjectStatus(sID_ProcessSubjectStatus, snID_Task_Activiti, sLoginController, sLoginExecutor, sText, sDatePlaneNew);
+    }
+    
+    @ApiOperation(value = "Синхронизировать ProcessSubject", notes = "Пример вызова:"
+            + "https://alpha.test.region.igov.org.ua/wf/service/subject/process/syncProcessSubject?snID_Process_Activiti=свое значение&snID_Task_Activiti=свое значение&sLogin=свое значение")
+    @RequestMapping(value = "/syncProcessSubject", method = RequestMethod.GET)
+    @ResponseBody
+    public ProcessSubject syncProcessSubject(
+                @ApiParam(value = "ид процесса", required = true) @RequestParam(value = "snID_Process_Activiti", required = true) String snID_Process_Activiti,
+                @ApiParam(value = "ид таски", required = true) @RequestParam(value = "snID_Task_Activiti", required = true) String snID_Task_Activiti,
+                @ApiParam(value = "логин", required = true) @RequestParam(value = "sLogin", required = true) String sLogin
+    		) {
+    
+        return processSubjectService.syncProcessSubject(snID_Process_Activiti, snID_Task_Activiti, sLogin);
+    }
+    
+    @ApiOperation(value = "Получить ProcessSubjectTask", notes = "Пример вызова:"
+            + "https://alpha.test.region.igov.org.ua/wf/service/subject/process/getProcessSubjectTasks?snID_Process_Activiti=свое значение")
+    @RequestMapping(value = "/getProcessSubjectTasks", method = RequestMethod.GET)
+    @ResponseBody
+    public List<ProcessSubjectTask> getProcessSubjectTasks(
+    		@ApiParam(value = "ид процесса", required = true)
+    		@RequestParam(value = "snID_Process_Activiti", required = true) String snID_Process_Activiti,
+                @ApiParam(value = "глубина выбрки, 0 -  во всю глубину", required = false)
+    		@RequestParam(value = "nDeepProcessSubjectTask", required = false, defaultValue = "1") Long nDeepProcessSubjectTask 
+    	) {
+    	
+    	return oProcessSubjectTaskService.getProcessSubjectTask(snID_Process_Activiti, nDeepProcessSubjectTask);
+    }
+    
+    @ApiOperation(value = "старт процесса по мультитаскам", notes = "Пример вызова:"
+            + "https://alpha.test.region.igov.org.ua/wf/service/subject/process/startProcess?snID_Process_Activiti_Root=свое значение"
+            + "sLogin=свое значение")
+    @RequestMapping(value = "/startProcess", method = RequestMethod.GET)
+    @ResponseBody
+    public Long startProcess(@ApiParam(value = "ид процесса документа", required = true) @RequestParam(value = "snID_Process_Activiti_Root") String snID_Process_Activiti_Root,
+            @ApiParam(value = "логин", required = false) @RequestParam(value = "sLogin", required = false) String sLogin) throws ParseException {
+    
+        return oProcessSubjectTaskService.startProcess(snID_Process_Activiti_Root);
+    }
+    
+    @ApiOperation(value = "Получить ProcessSubject", notes = "Пример вызова:"
+            + "https://alpha.test.region.igov.org.ua/wf/service/subject/process/getProcessSubjectTest?snID_Process_Activiti=свое значение&"
+            + "sLogin=свое значение")
+    @RequestMapping(value = "/getProcessSubjectTest", method = RequestMethod.GET)
+    @ResponseBody
+    public ProcessSubject getProcecssSubjectTest(@ApiParam(value = "ид процесса", required = true) @RequestParam(value = "snID_Process_Activiti") String snID_Process_Activiti,
+            @ApiParam(value = "логин", required = false) @RequestParam(value = "sLogin", required = false) String sLogin) {
+    
+        return processSubjectService.getProcessSubject(snID_Process_Activiti, sLogin);
+    }
+       
 }

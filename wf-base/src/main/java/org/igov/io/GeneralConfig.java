@@ -226,6 +226,10 @@ public class GeneralConfig {
     @Value("${general.Mail.sPasswordClerk}")
     private String sPassClerk;
     
+    @Value("${general.queue.qlogic.sHost}")
+    private String sQlogicHost;
+    @Value("${general.queue.qlogic.sPort}")
+    private String sQlogicPort;
     
     public String getsAddrClerk() {
 		return sAddrClerk;
@@ -490,7 +494,7 @@ public class GeneralConfig {
 
     public Integer getServerId(Integer nID_Server) {
         if (mServerReplace == null) {
-            mServerReplace = new HashMap();
+            mServerReplace = new HashMap<>();
             if (saServerReplace != null && !"".equals(saServerReplace.trim())) {
                 String saServerReplace_Trimed = saServerReplace.trim();
                 for (String sServerReplace : saServerReplace_Trimed.split("\\,")) {
@@ -713,4 +717,12 @@ public class GeneralConfig {
         return sPassword_Auth_1C;
     }
 
+	public String getQlogicHost() {
+		return sQlogicHost;
+	}
+
+	public String getQlogicPort() {
+		return sQlogicPort;
+	}
+    
 }

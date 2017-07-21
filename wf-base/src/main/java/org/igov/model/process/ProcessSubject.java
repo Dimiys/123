@@ -15,7 +15,12 @@ import com.fasterxml.jackson.annotation.JsonRootName;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.List;
+import javax.persistence.CascadeType;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
 import javax.persistence.Transient;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 @javax.persistence.Entity
 public class ProcessSubject extends AbstractEntity {
@@ -76,6 +81,8 @@ public class ProcessSubject extends AbstractEntity {
     private List<ProcessUser> aUser;
     
     @JsonProperty(value = "aProcessSubjectChild")
+    @OneToMany(mappedBy = "processSubjectChild", cascade = CascadeType.ALL)
+    @LazyCollection(LazyCollectionOption.FALSE)
     @Transient
     private List<ProcessSubject> aProcessSubjectChild;
     
@@ -87,10 +94,18 @@ public class ProcessSubject extends AbstractEntity {
     @Column
     private String sLoginRole;
     
-    @JsonProperty(value = "oProcessSubjectTask")
-    @ManyToOne(targetEntity = ProcessSubjectTask.class)
+    @JsonProperty(value = "nID_ProcessSubjectTask")
+    @Column
+    private Long nID_ProcessSubjectTask;
+    
+    /*@JsonProperty(value = "oProcessSubjectTask")
+    @ManyToOne(fetch = FetchType.EAGER, targetEntity = ProcessSubjectTask.class)
     @JoinColumn(name = "nID_ProcessSubjectTask")
-    private ProcessSubjectTask oProcessSubjectTask;
+    private ProcessSubjectTask oProcessSubjectTask;*/
+    
+    @JsonProperty(value = "snID_Task_Activiti")
+    @Column
+    private String snID_Task_Activiti;
     
     public List<ProcessSubject> getaProcessSubjectChild() {
 	return aProcessSubjectChild;
@@ -180,16 +195,25 @@ public class ProcessSubject extends AbstractEntity {
         return sTextType;
     }
 
-    public ProcessSubjectTask getoProcessSubjectTask() {
-        return oProcessSubjectTask;
-    }
-
     public void setsTextType(String sTextType) {
-        this.sTextType = sTextType;
+        this.sTextType = sTextType == null ? "textArea" : sTextType;
+        //this.sTextType = sTextType;
+    }
+    
+    /*public ProcessSubjectTask getoProcessSubjectTask() {
+        return oProcessSubjectTask;
     }
 
     public void setoProcessSubjectTask(ProcessSubjectTask oProcessSubjectTask) {
         this.oProcessSubjectTask = oProcessSubjectTask;
+    }*/
+
+    public Long getnID_ProcessSubjectTask() {
+        return nID_ProcessSubjectTask;
+    }
+
+    public void setnID_ProcessSubjectTask(Long nID_ProcessSubjectTask) {
+        this.nID_ProcessSubjectTask = nID_ProcessSubjectTask;
     }
 
     public DateTime getsDatePlanNew() {
@@ -211,25 +235,33 @@ public class ProcessSubject extends AbstractEntity {
     public void setsDateFact(DateTime sDateFact) {
         this.sDateFact = sDateFact;
     }
-   
-    @Override
-    public String toString() {
-        return "ProcessSubject{" + "id=" + getId()
-                + ", snID_Process_Activiti=" + snID_Process_Activiti
-                + ", sText=" + sText
-                + ", oProcessSubjectStatus=" + oProcessSubjectStatus
-                + ", nOrder=" + nOrder
-                + ", sLogin=" + sLogin
-                + ", sDateFact=" + sDateFact
-                + ", sDateEdit=" + sDateEdit
-                + ", sDatePlan=" + sDatePlan
-                + ", sDatePlanNew=" + sDatePlanNew
-                + ", aUser=" + aUser
-                + ", aProcessSubjectChild=" + aProcessSubjectChild
-                + ", sTextType=" + sTextType
-                + ", sLoginRole=" + sLoginRole
-                + ", oProcessSubjectTask=" + oProcessSubjectTask + '}';
+
+    public String getSnID_Task_Activiti() {
+        return snID_Task_Activiti;
     }
+
+    public void setSnID_Task_Activiti(String snID_Task_Activiti) {
+        this.snID_Task_Activiti = snID_Task_Activiti;
+    }
+    
+   
+    /* @Override
+     public String toString() {
+         return "ProcessSubject{" + "id=" + getId()
+                 + ", snID_Process_Activiti=" + snID_Process_Activiti
+                 + ", sText=" + sText
+                 + ", oProcessSubjectStatus=" + oProcessSubjectStatus
+                 + ", nOrder=" + nOrder
+                 + ", sLogin=" + sLogin
+                 + ", sDateFact=" + sDateFact
+                 + ", sDateEdit=" + sDateEdit
+                 + ", sDatePlan=" + sDatePlan
+                 + ", sDatePlanNew=" + sDatePlanNew
+                 + ", aUser=" + aUser
+                 + ", sTextType=" + sTextType
+                 + ", sLoginRole=" + sLoginRole
+                 + ", snID_Task_Activiti=" + snID_Task_Activiti + '}';
+     }*/
     
         
 }

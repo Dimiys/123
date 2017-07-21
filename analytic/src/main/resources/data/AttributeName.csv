@@ -40,3 +40,55 @@ nID;sName;sID;nOrder
 39;Название города;CITY:CITYNAME;15
 40;Номер документа от вышестоящей организации;COMPLAIN:PARENTDOCNUMBER;20
 41;Кол-во подписей в коллективном обращении;COMPLAIN:COLLECTIVESIGNCOUNT;-1
+42;Страна импортер;sCountry_1;1
+43;Фамилия;bankIdlastName;2
+44;Имя;bankIdfirstName;3
+45;Отчество;bankIdmiddleName;4
+46;Дата рождения;sBirthDate1;5
+47;Место рождения;sBornPlace1;6
+48;Название РВК;sNameRVK2;7
+49;Название города и номер ящика;sPlaceMilitary2;8
+50;Номер брака;sNumberOfMarriages2;9
+51;телефон;phone;10
+52;электронная почта;email;11
+53;Таблица выбросов;nVukidTable;12
+54;Файл с текстом ХТМЛ;lastName;13
+55;дробное значение;firstName;14
+56;Файл копии решения;ScancopyDoc1;15
+57;Выборный вариант;Enum_test;16
+58;Решение;sDecision;17
+59;Принтформа;sBody1;18
+60;Файл принтформы;PrintForm_1;19
+61;Статус таски;saTaskStatus;20
+62;Референт;bReferent;21
+63;Файл с СТ;ScancopyDoc;22
+64;Файл с ЮТ;ScancopyDoc2;23
+65;орган;sID_Public_SubjectOrganJoin;24
+66;Место центра;sAddress;25
+67;паспорт;bankIdPassport;26
+68;ИНН;bankIdinn;27
+69;адрес;Address;28
+70;обращение;sInfo;29
+71;гражданство;asNation;30
+72;страна;sCountryB;31
+73;файлы;nOther;32
+74;номер органа;sPhoneOrgan;33
+75;шапка;sShapka;34
+76;название органа;sNameOrgan;35
+77;время работы;sWorkTime;36
+78;почта клерка;sMailClerk;37
+79;решение;asDecide;38
+80;комментарий;sComment;39
+81;ФИО;sFIO;40
+82;маркеры1;marker1;41
+83;маркеры2;marker2;42
+84;Дата рождения;sBirthDate;43
+85;Емейл по банку;bankIdemail;44
+86;Телефон по банку;bankIdphone;45
+87;Номер сервиса;serviceNumber;46
+88;Номер заявки;claimNumber;47
+89;ГРИС возврат;sID_Return_GRIS;48
+90;Дата ГРИС;sReturnDateCreate_GRIS;49
+91;Дата изменения ГРИС;sReturnDateChange_GRIS;50
+92;Статус ГРИС;sReturnStatus_GRIS;51
+93;Результат;result;52

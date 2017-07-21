@@ -23,8 +23,7 @@ import org.activiti.engine.TaskService;
 import org.activiti.engine.identity.User;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.igov.io.GeneralConfig;
 import org.igov.model.core.BaseEntityDao;
 import org.igov.model.process.ProcessSubject;
 import org.igov.model.process.ProcessSubjectDao;
@@ -35,23 +34,25 @@ import org.igov.model.process.ProcessSubjectStatusDao;
 import org.igov.model.process.ProcessSubjectTree;
 import org.igov.model.process.ProcessSubjectTreeDao;
 import org.igov.model.process.ProcessUser;
-import org.igov.service.conf.AttachmetService;
 import org.igov.service.business.action.event.ActionEventHistoryService;
 import org.igov.service.business.action.task.core.ActionTaskService;
+import org.igov.service.conf.AttachmetService;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.springframework.beans.factory.annotation.Autowired; 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
-import org.igov.io.GeneralConfig;
-import org.springframework.stereotype.Component;
 
 /**
  *
@@ -60,7 +61,7 @@ import org.springframework.stereotype.Component;
 @Component("processSubjectService")
 public class ProcessSubjectService {
 
-    private static final Log LOG = LogFactory.getLog(ProcessSubjectService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ProcessSubjectService.class);
     private static final long FAKE_ROOT_PROCESS_ID = 0;
 
     @Autowired
@@ -382,28 +383,41 @@ public class ProcessSubjectService {
     }
 
     public void removeProcessSubject(ProcessSubject processSubject) {
-
+        
+        LOG.info("removeProcessSubject started...");
+        
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processSubject.getSnID_Process_Activiti()).singleResult();
-
+        LOG.info("processInstance {}", processInstance);
+        
         if (processInstance != null) {
             runtimeService.deleteProcessInstance(processSubject.getSnID_Process_Activiti(), "deleted");
         }
+        
+        Optional<ProcessSubjectTree> processSubjectTreeToDelete = processSubjectTreeDao.findBy("processSubjectChild", processSubject);
+        
+        if(processSubjectTreeToDelete.isPresent()){
+            LOG.info("processSubjectTreeToDelete {}", processSubjectTreeToDelete.get());
+            processSubjectTreeDao.delete(processSubjectTreeToDelete.get());
+        }
 
-        ProcessSubjectTree processSubjectTreeToDelete = processSubjectTreeDao.findByExpected("processSubjectChild", processSubject);
-        processSubjectTreeDao.delete(processSubjectTreeToDelete);
         processSubjectDao.delete(processSubject);
+        LOG.info("removeProcessSubject ended...");
     }
 
     public void removeProcessSubjectDeep(ProcessSubject processSubject) {
+        LOG.info("removeProcessSubjectDeep started...");
         ProcessSubjectResult processSubjectResult = getCatalogProcessSubject(processSubject.getSnID_Process_Activiti(), 0L, null);
+        LOG.info("processSubjectResult {}", processSubjectResult.getaProcessSubject());
         List<ProcessSubject> aProcessSubject = processSubjectResult.getaProcessSubject();
+        
         List<ProcessSubject> aReverseProcessSubject = Lists.reverse(aProcessSubject);
-
+        
         for (ProcessSubject oProcessSubject : aReverseProcessSubject) {
             removeProcessSubject(oProcessSubject);
         }
 
         removeProcessSubject(processSubject);
+        LOG.info("removeProcessSubjectDeep ended...");
     }
 
     public void editProcessSubject(ProcessSubject processSubject, Map<String, Object> mParamDocument) throws ParseException {
@@ -539,8 +553,8 @@ public class ProcessSubjectService {
         historyParam.put("sLogin", sLogin);
 
         try {
-            oActionEventHistoryService.addHistoryEvent(sID_Order,
-                   sLogin, historyParam, 14L);
+            //oActionEventHistoryService.addHistoryEvent(sID_Order,
+            //       sLogin, historyParam, 14L);
         } catch (Exception ex) {
             LOG.info("Error saving history during document editing: {}", ex);
         }
@@ -583,6 +597,41 @@ public class ProcessSubjectService {
                 LOG.info("oDateDoc: " + oDateDoc);
                 LOG.info("sFormatDateDoc: " + sFormatDateDoc);
                 mParam.replace("sDateDoc", sFormatDateDoc);
+            }
+            if ((mParam.get("oDateBegin") != null) && (!mParam.get("oDateBegin").equals(""))) {
+                Date oDateDoc = parseDate((String)mParam.get("oDateBegin"));
+                sFormatDateDoc = df_StartProcess.format(oDateDoc);
+                LOG.info("oDateBegin: " + oDateDoc);
+                LOG.info("sFormatoDateBegin: " + sFormatDateDoc);
+                mParam.replace("oDateBegin", sFormatDateDoc);
+            }
+            if ((mParam.get("oDateEnd") != null) && (!mParam.get("oDateEnd").equals(""))) {
+                Date oDateDoc = parseDate((String)mParam.get("oDateEnd"));
+                sFormatDateDoc = df_StartProcess.format(oDateDoc);
+                LOG.info("oDateEnd: " + oDateDoc);
+                LOG.info("sFormatoDateEnd: " + sFormatDateDoc);
+                mParam.replace("oDateEnd", sFormatDateDoc);
+            }
+            if ((mParam.get("sDate_441") != null) && (!mParam.get("sDate_441").equals(""))) {
+                Date oDateDoc = parseDate((String)mParam.get("sDate_441"));
+                sFormatDateDoc = df_StartProcess.format(oDateDoc);
+                LOG.info("sDate_441: " + oDateDoc);
+                LOG.info("sFormatsDate_441: " + sFormatDateDoc);
+                mParam.replace("sDate_441", sFormatDateDoc);
+            }
+            if ((mParam.get("sDateApprove") != null) && (!mParam.get("sDateApprove").equals(""))) {
+                Date oDateDoc = parseDate((String)mParam.get("sDateApprove"));
+                sFormatDateDoc = df_StartProcess.format(oDateDoc);
+                LOG.info("sDateApprove: " + oDateDoc);
+                LOG.info("sFormatsDateApprove: " + sFormatDateDoc);
+                mParam.replace("sDateApprove", sFormatDateDoc);
+            }
+            if ((mParam.get("sDate_442") != null) && (!mParam.get("sDate_442").equals(""))) {
+                Date oDateDoc = parseDate((String)mParam.get("sDate_442"));
+                sFormatDateDoc = df_StartProcess.format(oDateDoc);
+                LOG.info("sDate_442: " + oDateDoc);
+                LOG.info("sFormatsDate_442: " + sFormatDateDoc);
+                mParam.replace("sDate_442", sFormatDateDoc);
             }
 
             ProcessSubject oProcessSubjectParent = processSubjectDao.findByProcessActivitiId(snProcess_ID);
@@ -737,9 +786,7 @@ public class ProcessSubjectService {
         }
         return oDateReturn;
     }
-
     
-
       
     /**
      * По ид процесса активити вынимаем всех детей. Если статус отличен от
@@ -798,74 +845,170 @@ public class ProcessSubjectService {
     }
     
     /**
-     * Изменение статуса процесса
-     * https://github.com/e-government-ua/i/issues/1660
+     * Изменение статуса процесса. По наличию логинов и статусу определяем какой
+     * кейс должен отработать.
      * 
-     * @param sID_ProcessSubjectStatus - статус на который нужно изменить
-     * @param snID_Task_Activiti - ид таски
-     * @param sLogin - логин того, кто вызвал сервис
-     * @param sText - если приходит, то изменяем
-     * @param sDatePlaneNew - планируемая дата выполнения
-     * @return processSubject - процесс, который был изменен
+     * @param sID_ProcessSubjectStatus  Статус, который нужно установить 
+     * @param snID_Task_Activiti        Ид таски
+     * @param sLoginController          Логин контролирующего
+     * @param sLoginExecutor            Логин исполнителя
+     * @param sText                     Текстовое поле
+     * @param sDatePlaneNew             Дата на которую нужно перенести срок
+     * @return                          Процесс, который был изменен
      */
-    public ProcessSubject setProcessSubjectStatus(String sID_ProcessSubjectStatus, String snID_Task_Activiti, String sLogin, String sText, DateTime sDatePlaneNew) {
+    public ProcessSubject setProcessSubjectStatus(
+            String sID_ProcessSubjectStatus, String snID_Task_Activiti, String sLoginController, String sLoginExecutor,
+            String sText, String sDatePlaneNew
+    ) {
+        
+        /**
+         *Определяем кто вызвал сервис (исполнитель или контролирующий). Пришел только
+         * логин sLoginExecutor - исполнитель, пришел только логин sLoginController - контролирующий,
+         * если пришло два логина - контролирующий.
+         */
+        String sLoginMain = sLoginController;
                 
+        if (sLoginExecutor != null && sLoginController == null) {
+            
+            sLoginMain = sLoginExecutor;
+        
+        } 
+        
         String snID_Process_Activiti = oActionTaskService.getProcessInstanceIDByTaskID(snID_Task_Activiti);
         
-        ProcessSubject oProcessSubject = processSubjectDao.findByProcessActivitiIdAndLogin(snID_Process_Activiti, sLogin);
+        ProcessSubject oProcessSubjectMain = processSubjectDao.findByProcessActivitiIdAndLogin(snID_Process_Activiti, sLoginMain);
                   
-        String sLoginRole = oProcessSubject.getsLoginRole();
+        String sLoginRoleMain = oProcessSubjectMain.getsLoginRole();
+        LOG.info("sLoginRoleMain={}", sLoginRoleMain);
         
-        if (sLoginRole.equals("Executor") || sLoginRole.equals("Controller")) {
-            
+        if (sLoginRoleMain.equals("Executor") || sLoginRoleMain.equals("Controller")) {
+
             ProcessSubjectStatus oProcessSubjectStatus = processSubjectStatusDao.findByExpected("sID", sID_ProcessSubjectStatus);
             
             DateTime dtCurrentDate = new DateTime();
+            DateTime dtDatePlaneNew = null;
+                
+            if (sDatePlaneNew != null) {        
+                dtDatePlaneNew = DateTime.parse(sDatePlaneNew, DateTimeFormat.forPattern("yyyy-MM-dd"));
+            }
              
-            oProcessSubject.setsDateEdit(dtCurrentDate);
-            oProcessSubject.setoProcessSubjectStatus(oProcessSubjectStatus);
-            
-            if (sText != null) {          
+            //Исполнитель отработал задачу
+            if ((sID_ProcessSubjectStatus.equals("executed") || sID_ProcessSubjectStatus.equals("notExecuted") 
+                || sID_ProcessSubjectStatus.equals("unactual")) && sLoginRoleMain.equals("Executor")) {
                 
-                oProcessSubject.setsText(sText);
-            }
-        
-            if (sID_ProcessSubjectStatus.equals("executed") || sID_ProcessSubjectStatus.equals("notExecuted") 
-                || sID_ProcessSubjectStatus.equals("unactual") && sLoginRole.equals("Executor")) {
+                if (sText != null) {                          
+                    oProcessSubjectMain.setsText(sText);
+                }
+                oProcessSubjectMain.setsDateEdit(dtCurrentDate);
+                oProcessSubjectMain.setoProcessSubjectStatus(oProcessSubjectStatus);
+                oProcessSubjectMain.setsDateFact(dtCurrentDate);
+                
+                processSubjectDao.saveOrUpdate(oProcessSubjectMain);
+                
+            //Просьба о переносе срока исполнителем    
+            } else if (sID_ProcessSubjectStatus.equals("requestTransfered") && sLoginRoleMain.equals("Executor")) {
+                
+                if (dtDatePlaneNew == null) {               
+                    throw new RuntimeException("Did not send a request date sDatePlaneNew. To set this status you must send a date which you need to set.");
+                }
+                
+                if (sText != null) {                          
+                    oProcessSubjectMain.setsText(sText);
+                }
+                oProcessSubjectMain.setsDateEdit(dtCurrentDate);
+                oProcessSubjectMain.setoProcessSubjectStatus(oProcessSubjectStatus);                
+                oProcessSubjectMain.setsDatePlanNew(dtDatePlaneNew);
+                
+                processSubjectDao.saveOrUpdate(oProcessSubjectMain);
+            
+            //Перенос срока контролирующим
+            } else if (sID_ProcessSubjectStatus.equals("transfered") && sLoginRoleMain.equals("Controller")) {
+                
+                if (sLoginExecutor == null) {                
+                    throw new RuntimeException("Did not send an executor login. To set this status you must to send executor's login besides controller's.");
+                }
+                
+                if (dtDatePlaneNew == null) {               
+                    throw new RuntimeException("Did not send a request date sDatePlaneNew. To set this status you must send a date which you need to set.");
+                }
+                
+                //вносим изменения в контролера
+                if (sText != null) {                          
+                    oProcessSubjectMain.setsText(sText);
+                }
+                oProcessSubjectMain.setsDateEdit(dtCurrentDate);
+                oProcessSubjectMain.setoProcessSubjectStatus(oProcessSubjectStatus);
+                
+                processSubjectDao.saveOrUpdate(oProcessSubjectMain);
+                
+                //вносим изменения в исполнителя
+                ProcessSubject oProcessSubjectExecutor = processSubjectDao.findByProcessActivitiIdAndLogin(snID_Process_Activiti, sLoginExecutor);
   
-                oProcessSubject.setsDateFact(dtCurrentDate);
+                oProcessSubjectExecutor.setsDateEdit(dtCurrentDate);
+                oProcessSubjectExecutor.setsDatePlan(dtDatePlaneNew);
+                oProcessSubjectExecutor.setsDatePlanNew(null);
+                oProcessSubjectExecutor.setoProcessSubjectStatus(oProcessSubjectStatus);
                 
-            } else if (sID_ProcessSubjectStatus.equals("requestTransfered") && sLoginRole.equals("Executor")) {
-                
-                oProcessSubject.setsDatePlanNew(sDatePlaneNew);
-                
-            } else if (sID_ProcessSubjectStatus.equals("transfered") && sLoginRole.equals("Controller")) {
+                processSubjectDao.saveOrUpdate(oProcessSubjectExecutor);
             
-                oProcessSubject.setsDatePlan(sDatePlaneNew);
-                oProcessSubject.setsDatePlanNew(null);
-                //статус у исполнителя меняем на transfered
-            
-            } else if (sID_ProcessSubjectStatus.equals("rejected") && sLoginRole.equals("Controller")) {
+            //Контролирующий отклонил отчет    
+            } else if (sID_ProcessSubjectStatus.equals("rejected") && sLoginRoleMain.equals("Controller")) {
                 
-                oProcessSubject.setsDateFact(null);
-                oProcessSubject.setsText(null);
-                //проставить статус rejected в записи исполнителя
-            
-            } else if (sID_ProcessSubjectStatus.equals("executed") || sID_ProcessSubjectStatus.equals("notExecuted") 
-                || sID_ProcessSubjectStatus.equals("unactual") && sLoginRole.equals("Controller")) {
-            
-                //Так же необходимо закрыть со статусом unactual по цепочке все делегированные задачи, если они не были отработаны исполнителями.
+                if (sLoginExecutor == null) {                
+                    throw new RuntimeException("Did not send an executor login. To set this status you must to send executor's login besides controller's.");
+                }
                 
+                //вносим изменения в контролера
+                if (sText != null) {                          
+                    oProcessSubjectMain.setsText(sText);
+                }
+                oProcessSubjectMain.setsDateEdit(dtCurrentDate);
+                oProcessSubjectMain.setoProcessSubjectStatus(oProcessSubjectStatus);
+                
+                processSubjectDao.saveOrUpdate(oProcessSubjectMain);
+                
+                //вносим изменения в исполнителя
+                ProcessSubject oProcessSubjectExecutor = processSubjectDao.findByProcessActivitiIdAndLogin(snID_Process_Activiti, sLoginExecutor);
+
+                oProcessSubjectExecutor.setsDateEdit(dtCurrentDate);
+                oProcessSubjectExecutor.setsDateFact(null);
+                oProcessSubjectExecutor.setsText(null);
+                oProcessSubjectExecutor.setoProcessSubjectStatus(oProcessSubjectStatus);
+                
+                processSubjectDao.saveOrUpdate(oProcessSubjectExecutor);
+               
+            } else if ((sID_ProcessSubjectStatus.equals("executed") || sID_ProcessSubjectStatus.equals("notExecuted") 
+                || sID_ProcessSubjectStatus.equals("unactual")) && sLoginRoleMain.equals("Controller")) {
+                                
+                List<ProcessSubject> aListOfOrocessSubjectToRemove = processSubjectDao.findAllBy("snID_Process_Activiti", snID_Process_Activiti);
+                LOG.info("aListOfOrocessSubjectToRemove={}", aListOfOrocessSubjectToRemove);
+                
+                for (ProcessSubject oProcessSubject : aListOfOrocessSubjectToRemove) {                                       
+                    removeProcessSubjectDeep(oProcessSubject);                                           
+                }
             }
-            
-            processSubjectDao.saveOrUpdate(oProcessSubject);
+            LOG.info("Setting a status complete.");
             
         } else {
         
-            LOG.info("setProcessSubjectStatus: sLogin= " + sLogin + "has not enough rights to modify the process oProcessSubject.Id= " + oProcessSubject.getId());
-            throw new IllegalArgumentException("sLogin= " + sLogin + "has not enough rights to modify the process oProcessSubject.Id= " + oProcessSubject.getId());
+            throw  new RuntimeException("Login=" + sLoginMain + " has no access to change a status.");
         }
         
+        return oProcessSubjectMain;
+    }
+
+    public ProcessSubject syncProcessSubject(String snID_Process_Activiti, String snID_Task_Activiti, String sLogin) {
+        
+        ProcessSubject oProcessSubject = processSubjectDao.findByProcessActivitiIdAndLogin(snID_Process_Activiti, sLogin);
+        
+        oProcessSubject.setSnID_Task_Activiti(snID_Task_Activiti);
+        
+        processSubjectDao.saveOrUpdate(oProcessSubject);
+        
         return oProcessSubject;
+    }
+
+    public ProcessSubject getProcessSubject(String snID_Process_Activiti, String sLogin) {
+        return processSubjectDao.findByProcessActivitiIdAndLogin(snID_Process_Activiti, sLogin);
     }
 }

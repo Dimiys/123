@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('dashboardJsApp')
-  .factory('Modal', function($rootScope, $modal) {
+  .factory('Modal', function($rootScope, $modal, $state) {
     /**
      * Opens a modal
      * @param  {Object} scope      - an object to be merged with modal's scope
@@ -41,6 +41,7 @@ angular.module('dashboardJsApp')
               classes: 'btn-success',
               text: 'Продовжити роботу з необробленими',
               click: function(e) {
+                $state.go('tasks.typeof', {type:'unassigned'});
                 warningModal.close(e);
               }
             }]
@@ -171,7 +172,7 @@ angular.module('dashboardJsApp')
 
             warningModal = openModal({
               modal: {
-                dismissable: true,
+                dismissable: name.includes('Could not find a task with id')? false : true,
                 title: 'Помилка!',
                 html: '<strong>' + name + '</strong>',
                 buttons: [{
@@ -179,6 +180,12 @@ angular.module('dashboardJsApp')
                   text: 'Ok',
                   click: function(e) {
                     warningModal.close(e);
+                    if (name.includes('Could not find a task with id')) {
+                      var currentUrl = window.location.href;
+                      var regex = /(http(s)?:\/\/)+([a-zA-Z0-9:.]+)+(\/tasks)+(\/)+(docHistory|myDrafts|documents|unassigned|selfAssigned|tickets|viewed)/g;
+                      var myArr = regex.exec(currentUrl);
+                      window.location = myArr[0] ? myArr[0] : currentUrl;
+                    }
                   }
                 }]
               }

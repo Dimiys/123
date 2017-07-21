@@ -18,7 +18,31 @@ angular.module('dashboardJsApp')
         modalScope.contentData = contentData;
         var signModal = openModal(modalScope, modalClass);
         signModal.result.then(function (signedContent) {
+          resultCallback({
+            id: contentData.id,
+            content: contentData.content,
+            certificate: signedContent.certBase64,
+            sign: signedContent.sign
+          });
+        }, function () {
+          dismissCallback();
+        });
+      }).catch(errorCallback);
+    }
+
+    function signContentsArray(contentDataOrLoader, resultCallback, dismissCallback, errorCallback, modalClass) {
+      $q.when(contentDataOrLoader).then(function (contentData) {
+        var modalScope = $rootScope.$new();
+        modalScope.contentData = contentData;
+        var signModal = openModal(modalScope, modalClass);
+        signModal.result.then(function (signedContent) {
+          angular.forEach(signedContent, function (el, key) {
+            el.id = contentData[key].id;
+            el.content = contentData[key].content;
+          });
+
           resultCallback(signedContent);
+
         }, function () {
           dismissCallback();
         });
@@ -31,6 +55,19 @@ angular.module('dashboardJsApp')
       var signModal = openModal(modalScope);
 
       signModal.result.then(function (signedContent) {
+        var byteCharacters = $base64.decode(signedContent.sign);
+        var byteNumbers = new Array(byteCharacters.length);
+        for (var i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        var byteArray = new Uint8Array(byteNumbers);
+        var blob = new Blob([byteArray], {type: 'application/pdf'});
+        var url = (window.URL || window.webkitURL).createObjectURL(blob);
+        var link = document.createElement("a");
+        link.download = "document.pdf";
+        link.href = url;
+        link.click();
+        //window.open(url, '_blank');
         resultCallback(signedContent);
       }, function () {
         dismissCallback();
@@ -51,6 +88,7 @@ angular.module('dashboardJsApp')
        *  }
        */
       signContent: signContent,
+      signContentsArray: signContentsArray,
       signManuallySelectedFile: signManuallySelectedFile
     }
   });
@@ -67,6 +105,7 @@ var SignDialogInstanceCtrl = function ($scope, $modalInstance, signService, md5,
   var isInitialized = signService.init();
 
   $scope.isInitialized = isInitialized;
+  $scope.isPluginActivated = false;
 
   $scope.signedContent = {};
 
@@ -84,6 +123,25 @@ var SignDialogInstanceCtrl = function ($scope, $modalInstance, signService, md5,
     },
     lastError: undefined
   };
+
+  var pingCount = 0;
+  var maxPings = 120;
+
+  var ping = setInterval(avtivatePlugin, 1000);
+
+  function avtivatePlugin() {
+    if(pingCount > maxPings) {
+      clearInterval(ping);
+    } else {
+      pingCount++;
+      signService.activate().then(function () {
+        clearInterval(ping);
+        $scope.lastError = undefined;
+        $scope.isPluginActivated = true;
+        console.log('The sign plug-in was activated for ' + pingCount + ' request' + (pingCount < 2 ? '.' : 's.'));
+      }).catch(catchLastError);
+    }
+  }
 
   $scope.isManuallySelectedFile = function () {
     return $scope._isManuallySelectedFile;
@@ -105,12 +163,10 @@ var SignDialogInstanceCtrl = function ($scope, $modalInstance, signService, md5,
   $scope.chooseEDSFile = function () {
     removeLastError();
     var edsContext = $scope.edsContext;
-    signService.activate().then(function () {
-      return signService.selectFile().then(function (edsStorage) {
-        edsContext.edsStorage.file = edsStorage;
-        var filePath = edsStorage.filePath;
-        edsContext.edsStorage.name = filePath.substr(filePath.lastIndexOf("/") + 1)
-      });
+    return signService.selectFile().then(function (edsStorage) {
+      edsContext.edsStorage.file = edsStorage;
+      var filePath = edsStorage.filePath;
+      edsContext.edsStorage.name = filePath.substr(filePath.lastIndexOf("/") + 1)
     }).catch(catchLastError);
   };
 
@@ -141,17 +197,9 @@ var SignDialogInstanceCtrl = function ($scope, $modalInstance, signService, md5,
         signService.selectKey(edsContext.selectedKey.key, edsContext.selectedKey.password)
         : true).then(function () {
 
-        return signService.signCMS($scope.contentData.content, !$scope.contentData.base64encoded)
+        return signService.signCMS($scope.contentData, !$scope.contentData.base64encoded)
           .then(function (signResult) {
-            var sign = signResult.sign;
-            var certBase64 = signResult.certificate;
-
-            $modalInstance.close({
-              id: $scope.contentData.id,
-              content: $scope.contentData.content,
-              certificate: certBase64,
-              sign: sign
-            });
+            $modalInstance.close(signResult);
           });
       }).catch(catchLastError);
     } else {

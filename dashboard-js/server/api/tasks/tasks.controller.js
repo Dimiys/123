@@ -12,6 +12,8 @@ var environment = require('../../config/environment');
 var request = require('request');
 var pdfConversion = require('phantom-html-to-pdf')();
 var Buffer = require('buffer').Buffer;
+var Base64 = require('base64-arraybuffer');
+var MultipartFormData = require('form-data');
 
 /*
  var nodeLocalStorage = require('node-localstorage').LocalStorage;
@@ -53,17 +55,17 @@ function loadTasksForOtherUsers(usersIDs, wfCallback, currentUserID) {
     });
 
   async.forEach(usersIDs, function (usersID, frCallback) {
-    var path = 'runtime/tasks';
+    var path = 'action/task/getTasksNew';
 
     var options = {
       path: path,
-      query: {assignee: usersID},
+      query: {sLogin: usersID, nSize: 500, bIncludeVariablesProcess: false, sFilterStatus: 'Opened', nStart: 0},
       json: true
     };
 
     activiti.get(options, function (error, statusCode, result) {
-      if (!error && result.data) {
-        tasks = tasks.concat(result.data);
+      if (!error && result.aoTaskDataVO) {
+        tasks = tasks.concat(result.aoTaskDataVO);
       }
       frCallback(null);
     });
@@ -73,19 +75,19 @@ function loadTasksForOtherUsers(usersIDs, wfCallback, currentUserID) {
 }
 
 function loadAllTasks(tasks, wfCallback, assigneeID) {
-  var path = 'runtime/tasks';
-
+  var path = 'action/task/getTasksNew';
   var options = {
     path: path,
-    query: {candidateOrAssigned: assigneeID, size: 500},
+    query: {sLogin: assigneeID, nSize: 500, bIncludeVariablesProcess: false, sFilterStatus: 'Opened', nStart: 0},
     json: true
   };
+
 
   activiti.get(options, function (error, statusCode, result) {
     if (error) {
       wfCallback(error);
     } else {
-      result.data = result.data.concat(tasks);
+      result.data = result.aoTaskDataVO.concat(tasks);
       wfCallback(null, result);
     }
   });
@@ -116,28 +118,46 @@ exports.index = function (req, res) {
       }
     });
   } else {
-    var path = 'action/task/getTasks';
+    var path = 'action/task/getTasksNew';
 
     query.nStart = (req.query.page || 0) * query.nSize;
 
     if (req.query.filterType === 'selfAssigned') {
       query.sLogin = user.id;
       query.sFilterStatus = 'OpenedAssigned';
-      query.includeProcessVariables = true;
+      query.bIncludeVariablesProcess = true;
     } else if (req.query.filterType === 'unassigned') {
       query.sLogin = user.id;
       query.sFilterStatus = 'OpenedUnassigned';
-      query.includeProcessVariables = false;
+      query.bIncludeVariablesProcess = false;
     } else if (req.query.filterType === 'finished') {
-      path = 'history/historic-task-instances';
-      query.size = query.nSize;
-      query.start = query.nStart;
-      query.taskInvolvedUser = user.id;
-      query.finished = true;
-    } else if (req.query.filterType === 'documents') {
-      query.sFilterStatus = 'Documents';
+      query.bIncludeVariablesProcess = true;
       query.sLogin = user.id;
-      query.includeProcessVariables = true;
+      query.sFilterStatus = 'Closed';
+    } else if (req.query.filterType === 'documents') {
+      query.sFilterStatus = 'DocumentOpenedUnassignedUnprocessed';
+      query.sLogin = user.id;
+      query.bIncludeVariablesProcess = true;
+      query.nSize = 15;
+    } else if (req.query.filterType === 'ecp') {
+      query.sFilterStatus = 'DocumentOpenedUnassignedWithoutECP';
+      query.sLogin = user.id;
+      query.bIncludeVariablesProcess = true;
+      query.nSize = 15;
+    } else if (req.query.filterType === 'viewed') {
+      query.sFilterStatus = 'DocumentOpenedUnassignedProcessed';
+      query.sLogin = user.id;
+      query.bIncludeVariablesProcess = true;
+      query.nSize = 15;
+    } else if (req.query.filterType === 'myDrafts') {
+      query.sFilterStatus = 'DocumentOpenedAssigned';
+      query.sLogin = user.id;
+      query.bIncludeVariablesProcess = true;
+      query.nSize = 15;
+    } else if (req.query.filterType === 'docHistory') {
+      query.sFilterStatus = 'DocumentClosed';
+      query.sLogin = user.id;
+      query.bIncludeVariablesProcess = true;
       query.nSize = 15;
     } else if (req.query.filterType === 'tickets') {
       path = 'action/flow/getFlowSlotTickets';
@@ -351,7 +371,13 @@ exports.getAttachmentContentTable = function (req, res) {
 
 exports.submitForm = function (req, res) {
   var options = {
-    path: 'form/form-data'
+    path: 'action/task/updateProcess',
+    query: {
+      bSaveOnly: false
+    },
+    headers: {
+      'Content-Type': 'application/json;charset=UTF-8'
+    }
   };
   activiti.post(options, function (error, statusCode, result) {
     res.statusCode = statusCode;
@@ -511,6 +537,7 @@ exports.upload_content_as_attachment = function (req, res) {
             stream: data.content,
             sFileNameAndExt: req.body.sFileNameAndExt,
             sID_Field: req.body.sID_Field,
+            sID_StorageType: req.body.sID_StorageType,
             headers: {
               'Content-Type': data.contentType + ';charset=utf-8'
             }
@@ -553,6 +580,32 @@ exports.upload_content_as_attachment = function (req, res) {
       error ? res.send(error) : res.status(statusCode).json(result);
     }, req.body.sContent, false);
   }
+
+};
+
+exports.setDocumentImage = function (req, res) {
+
+  var user = JSON.parse(req.cookies.user);
+  var contentAndSignContainer = req.body.sContent;
+  var params = {
+    qs: {
+      nID_Process: req.params.taskId,
+      bSigned: req.body.bSigned,
+      sFileNameAndExt: req.body.sFileNameAndExt.replace(new RegExp(/[*|\\:"<>?/]/g), ""),
+      sID_Field: req.body.sID_Field,
+      sKey_Step: req.body.sKey_Step,
+      sLogin: user.id,
+      sContentType: req.body.sContentType
+    },
+    headers: {
+      'Content-Type': 'application/pdf;charset=utf-8'
+    }
+  };
+  var content = {buffer: new Buffer(new Buffer(contentAndSignContainer, 'base64').toString('binary'), 'binary')};
+
+  activitiUpload.uploadContent('object/file/setDocumentImage', params, content, function (error, response, body) {
+    error ? res.send(error) : res.status(response.statusCode).json(result);
+  });
 
 };
 
@@ -860,4 +913,19 @@ exports.checkAttachmentSignNew = function (req, res) {
 
     res.status(200).send(body);
   });
+};
+
+module.exports.uploadFileHTML = function (req, res) {
+  activiti.post({
+    path: 'object/file/setProcessAttachText',
+    query: {
+      sFileNameAndExt: req.body.sFileNameAndExt
+    },
+    headers: {
+      'Content-Type': 'text/html;charset=utf-8'
+    }
+  }, function (error, statusCode, result) {
+    error ? res.send(error) : res.status(statusCode).json(result);
+  }, req.body.sContent, false);
+
 };

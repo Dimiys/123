@@ -5,6 +5,7 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.OneToMany;
+import javax.persistence.Transient;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 import org.igov.model.core.AbstractEntity;
@@ -15,6 +16,10 @@ import org.igov.model.core.AbstractEntity;
  */
 @javax.persistence.Entity
 public class ProcessSubjectTask extends AbstractEntity{
+    
+    @JsonProperty(value = "sKey")
+    @Column
+    private String sKey;
     
     @JsonProperty(value = "sHead")
     @Column
@@ -28,10 +33,19 @@ public class ProcessSubjectTask extends AbstractEntity{
     @Column
     private String snID_Process_Activiti_Root;
     
-    @OneToMany(mappedBy = "oProcessSubjectTask", cascade = CascadeType.ALL, orphanRemoval = true)
-    @LazyCollection(LazyCollectionOption.FALSE) 
+    /*@OneToMany(mappedBy = "oProcessSubjectTask", cascade = CascadeType.ALL)
+    @LazyCollection(LazyCollectionOption.FALSE) */
+    @Transient
     private List<ProcessSubject> aProcessSubject;
 
+    public String getsKey() {
+        return sKey;
+    }
+
+    public void setsKey(String sKey) {
+        this.sKey = sKey;
+    }
+    
     public String getsHead() {
         return sHead;
     }
@@ -42,10 +56,6 @@ public class ProcessSubjectTask extends AbstractEntity{
 
     public String getSnID_Process_Activiti_Root() {
         return snID_Process_Activiti_Root;
-    }
-
-    public List<ProcessSubject> getaProcessSubject() {
-        return aProcessSubject;
     }
 
     public void setsHead(String sHead) {
@@ -63,14 +73,18 @@ public class ProcessSubjectTask extends AbstractEntity{
     public void setaProcessSubject(List<ProcessSubject> aProcessSubject) {
         this.aProcessSubject = aProcessSubject;
     }
+    
+    public List<ProcessSubject> getaProcessSubject() {
+        return aProcessSubject;
+    }
 
-    @Override
+    /*@Override
     public String toString() {
         return "ProcessSubjectTask{"
                 + "id=" + getId()
                 + "sHead=" + sHead + ", sBody=" + sBody
                 + ", snID_Process_Activiti_Root=" + snID_Process_Activiti_Root
                 + ", aProcessSubject=" + aProcessSubject + '}';
-    }
+    }*/
    
 }

@@ -21,9 +21,11 @@ import org.igov.analytic.model.process.ProcessDao;
 import org.igov.analytic.model.process.ProcessTask;
 import org.igov.analytic.model.source.SourceDB;
 import org.igov.analytic.model.source.SourceDBDao;
-import org.igov.io.db.kv.analytic.IFileStorage;
+import org.igov.io.db.kv.analytic.impl.FileMongoStorageAnalytic;
+import org.igov.io.db.kv.statical.IFileStorage;
 import org.igov.io.db.kv.statical.exceptions.RecordNotFoundException;
 import org.igov.service.ArchiveServiceImpl;
+import org.igov.service.migration.MigrationService;
 import org.igov.util.VariableMultipartFile;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -31,22 +33,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import org.igov.model.action.task.core.ProcessIdCover;
 
 /**
  * @author olga
  */
 @Controller
-@Api(tags = { "ProcessController - процессы и задачи" })
+@Api(tags = {"ProcessController - процессы и задачи"})
 @RequestMapping(value = "/analytic/process")
 public class ProcessController {
 
@@ -69,8 +67,9 @@ public class ProcessController {
     @Autowired
     private Attribute_FileDao attribute_FileDao;
 
-    //@Autowired
-    //private IBytesDataStorage durableBytesDataStorage;
+    @Autowired
+    private FileMongoStorageAnalytic analyticFileDataStorage;
+
     @Autowired
     private IFileStorage durableFileStorage;
 
@@ -80,11 +79,22 @@ public class ProcessController {
     @Autowired
     HistoryService historyService;
 
+    @Autowired
+    private MigrationService migrationService;
+
+    @ApiOperation(value = "/migration", notes = "#### Migration - миграция закрытых данных с активной БД в аналитическую")
+    @RequestMapping(value = "/migration", method = RequestMethod.GET)
+    public void migrate(@RequestParam(value = "processId", required = false) String processId) {
+        LOG.info("Inside /migration service");
+        migrationService.migrateOldRecords(processId);
+    }
+
+
     @ApiOperation(value = "/backup", notes = "##### Process - сохранение процесса #####\n\n")
     @RequestMapping(value = "/backup", method = RequestMethod.GET)
     public
     @ResponseBody
-    void backup() throws ParseException, Exception {
+    void backup() throws Exception {
         LOG.info("/backup!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! :)");
         archiveService.archiveData();
         LOG.info("/backup ok!!!");
@@ -94,11 +104,11 @@ public class ProcessController {
     @RequestMapping(value = "/duplicate", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
     @ResponseBody
     public String duplicate() {
-       StringBuilder stringBuilder = new StringBuilder();
+        StringBuilder stringBuilder = new StringBuilder();
 
         List<HistoricProcessInstance> processInstances = historyService.createHistoricProcessInstanceQuery().finished().list();
 
-        for(HistoricProcessInstance instance: processInstances) {
+        for (HistoricProcessInstance instance : processInstances) {
             stringBuilder.append(createNewArchiveProcess(instance)).append("\n").append(createNewCustomArchiveProcess(instance)).append("\n-------------------");
 
         }
@@ -107,7 +117,7 @@ public class ProcessController {
 
     //TODO rewrite this method as it provides multiple objects each time it is called
     private Process createNewArchiveProcess(HistoricProcessInstance instance) {
-        Process archiveProcess = new  Process();
+        Process archiveProcess = new Process();
         SourceDB sourceDB = new SourceDB();
         sourceDB.setName("iGov");
         archiveProcess.setoSourceDB(sourceDB);
@@ -119,7 +129,6 @@ public class ProcessController {
         archiveProcess.setaAttribute(createAttributeForArchiveProcess(variablesList));
 
 
-
         return archiveProcess;
     }
 
@@ -127,7 +136,7 @@ public class ProcessController {
     private List<Attribute> createAttributeForArchiveProcess(List<HistoricVariableInstance> variableInstances) {
         List<Attribute> resultList = new LinkedList<>();
 
-        for(HistoricVariableInstance instance: variableInstances) {
+        for (HistoricVariableInstance instance : variableInstances) {
             Attribute attribute = new Attribute();
         }
         return null;
@@ -153,10 +162,10 @@ public class ProcessController {
     }
 
     //http://localhost:8080/wf-region/service/analytic/process/getProcesses?sID_=1
+    //http://localhost:8080/wf-region/service/analytic/process/getProcesses?sID_=1
     @ApiOperation(value = "/getProcesses", notes = "##### Process - получение процесса #####\n\n")
-    @RequestMapping(value = "/getProcesses", method = RequestMethod.GET, headers = { JSON_TYPE })
-    public
-    @ResponseBody
+    @RequestMapping(value = "/getProcesses", method = RequestMethod.GET, headers = {JSON_TYPE})
+    public @ResponseBody
     List<Process> getProcesses(
             @ApiParam(value = "внутренний ид заявки", required = true) @RequestParam(value = "sID_") String sID_,
             @ApiParam(value = "ид источника", required = false) @RequestParam(value = "nID_Source", required = false) Long nID_Source) {
@@ -166,15 +175,16 @@ public class ProcessController {
             LOG.info("/getProcess!!!!!!!!!!!!!!!!!!!!string sID_: " + sID_.trim());
             sID_ = sID_.trim().toUpperCase();
             if (sID_.length() >= 3) {
+                if (sID_.indexOf("-") == 1) { //передали sID_Order вместо nID_Process
+                    Long nID_Process = new ProcessIdCover(sID_, null, null, null).nID_Process();
+                    sID_ = String.valueOf(nID_Process);
+                }
                 List<Process> processes = processDao.findAllBy("sID_", sID_);
                 LOG.info("processes: " + processes.size());
                 result.addAll(processes);
             }
         } catch (Exception ex) {
             LOG.error("ex: ", ex);
-            Process process = createStub();
-            process.setsID_(ex.getMessage());
-            result.add(process);
         }
         return result;
     }
@@ -214,10 +224,10 @@ public class ProcessController {
         processTask.setoDateStart(new DateTime());
         processTask.setoDateFinish(new DateTime());
         processTask.setsID_("test");
-        List<AccessGroup> accessGroups = new ArrayList();
+        Set<AccessGroup> accessGroups = new HashSet<>();
         accessGroups.add(accessGroup);
         processTask.setaAccessGroup(accessGroups);
-        List<AccessUser> accessUsers = new ArrayList();
+        Set<AccessUser> accessUsers = new HashSet<>();
         accessUsers.add(accessUser);
         processTask.setaAccessUser(accessUsers);
         //------------------------------
@@ -261,7 +271,7 @@ public class ProcessController {
 
     //http://localhost:8080/wf-region/service/analytic/process/getFile?nID_Attribute_File=1
     @ApiOperation(value = "/getFile", notes = "##### File - получение контента файла #####\n\n")
-    @RequestMapping(value = "/getFile", method = RequestMethod.GET, headers = { JSON_TYPE })
+    @RequestMapping(value = "/getFile", method = RequestMethod.GET, headers = {JSON_TYPE})
     public
     @ResponseBody
     byte[] getFile(
@@ -275,7 +285,7 @@ public class ProcessController {
             if (attribute_File.isPresent()) {
                 Attribute_File file = attribute_File.get();
                 multipartFile = new VariableMultipartFile(
-                        durableFileStorage.openFileStream(String.valueOf(file.getsID_Data())),
+                        analyticFileDataStorage.openFileStream(String.valueOf(file.getsID_Data())),
                         file.getsFileName(), file.getsFileName() + "." + file.getsExtName(), file.getsContentType());
                 httpResponse.setCharacterEncoding("UTF-8");
                 httpResponse.setHeader("Content-disposition", "attachment; filename=" + multipartFile.getName());

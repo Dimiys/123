@@ -40,6 +40,7 @@ import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -58,6 +59,7 @@ public class AttachmetService implements CustomRegexPattern{
     private IBytesDataInmemoryStorage oBytesDataInmemoryStorage;
 
     @Autowired
+    @Qualifier("durableBytesDataStorage")
     private IBytesDataStorage oBytesDataStaticStorage;
 
     @Autowired
@@ -156,8 +158,8 @@ public class AttachmetService implements CustomRegexPattern{
         List<DocumentStepSubjectRight> aDocumentStepSubjectRight = new ArrayList<>();
         
         if(oFindedDocumentStep != null){
-            aDocumentStepSubjectRight.addAll(oFindedDocumentStep.getRights());
-            LOG.info("oFindedDocumentStep ={}", oFindedDocumentStep.getRights());
+            aDocumentStepSubjectRight.addAll(oFindedDocumentStep.aDocumentStepSubjectRight());
+            LOG.info("oFindedDocumentStep ={}", oFindedDocumentStep.aDocumentStepSubjectRight());
         }
         
         // пробегаюсь по листу логинов, ищу нужный
@@ -301,8 +303,8 @@ public class AttachmetService implements CustomRegexPattern{
         List<DocumentStepSubjectRight> aDocumentStepSubjectRight = new ArrayList<>();
         
         if(oFindedDocumentStep != null){
-            aDocumentStepSubjectRight.addAll(oFindedDocumentStep.getRights());
-            LOG.info("oFindedDocumentStep ={}", oFindedDocumentStep.getRights());
+            aDocumentStepSubjectRight.addAll(oFindedDocumentStep.aDocumentStepSubjectRight());
+            LOG.info("oFindedDocumentStep ={}", oFindedDocumentStep.aDocumentStepSubjectRight());
         }
         
         DocumentStepSubjectRight oTargetDocumentStepSubjectRight = null;

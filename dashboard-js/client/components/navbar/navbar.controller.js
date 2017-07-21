@@ -6,13 +6,22 @@
     .controller('NavbarCtrl', navbarCtrl);
 
   navbarCtrl.$inject = ['$scope', '$rootScope', '$location', 'Auth', 'envConfigService', 'iGovNavbarHelper', 'tasksSearchService',
-    '$state', 'tasks', 'lunaService', 'Modal', '$stateParams', 'processes', '$localStorage', 'signDialog'];
+    '$state', 'tasks', 'lunaService', 'Modal', '$stateParams', 'processes', '$localStorage', 'signDialog', '$http'];
   function navbarCtrl($scope, $rootScope, $location, Auth, envConfigService, iGovNavbarHelper, tasksSearchService,
-                      $state, tasks, lunaService, Modal, $stateParams, processes, $localStorage, signDialog) {
+                      $state, tasks, lunaService, Modal, $stateParams, processes, $localStorage, signDialog, $http) {
     $scope.menu = [{
       'title': 'Задачі',
       'link': '/tasks'
     }];
+
+    $http.get('/api/env/get-env-config').success(function (data) {
+      $scope.ProjectRegion_MainPage_bTasksOnly = data.oOrganisation.ProjectRegion_MainPage_bTasksOnly;
+    });
+
+    $scope.navBarIsCollapsed = true;
+    $scope.openCloseMenu = function () {
+      $scope.navBarIsCollapsed = !$scope.navBarIsCollapsed;
+    };
 
     envConfigService.loadConfig(function (config) {
       iGovNavbarHelper.isTest = config.bTest;
@@ -286,6 +295,14 @@
       }, function () {
         console.log('Sign Dismissed');
       })
+    };
+
+    $scope.isActive = function (tab) {
+      return $state.current.name.indexOf(tab) === 0;
+    };
+
+    $scope.backToTasks = function () {
+      $state.go('tasks.typeof', {type:'unassigned'});
     }
 
   }

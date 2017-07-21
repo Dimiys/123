@@ -5,7 +5,7 @@
     "angular": "~1.5.5",
     "json3": "~3.3.1",
     "es5-shim": "~3.0.1",
-    "jquery": "~1.11.0",
+    "jquery": "1.9.1",
     "bootstrap": "3.3.4",
     "angular-base64": "2.0.5",
     "angular-md5": "0.1.10",
@@ -29,7 +29,8 @@
     "ui-select": "angular-ui-select#^0.16.1",
     "eonasdan-bootstrap-datetimepicker": "^4.17.43",
     "textAngular": "^1.5.16",
-    "angular-spectrum-colorpicker": "^1.4.5"
+    "angular-spectrum-colorpicker": "^1.4.5",
+    "angular-snap": "^1.8.5"
   },
   "devDependencies": {
     "angular-mocks": "~1.5.5",

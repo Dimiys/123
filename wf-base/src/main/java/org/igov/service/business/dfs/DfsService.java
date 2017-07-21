@@ -73,12 +73,12 @@ public class DfsService {
     public String getAnswer(String sID_Task, String snID_Process, String sINN, String snCountYear, String sFile_XML_SWinEd_Filter) {
         StringBuilder asID_Attach_Dfs = new StringBuilder();
         List<ByteArrayMultipartFile> aByteArrayMultipartFile = getAnswer(sINN, snCountYear);
-        LOG.info("snID_Process: " + snID_Process + " snCountYear: " + snCountYear
+        LOG.info("getAnswer snID_Process: " + snID_Process + " snCountYear: " + snCountYear
                 + "aByteArrayMultipartFile.size()=" + aByteArrayMultipartFile.size());
         String sFile_XML_SWinEd_Value = (String) runtimeService.getVariable(snID_Process, "oFile_XML_SWinEd");
         String sFileName_XML_SWinEd_Answer_Value = (String) runtimeService.getVariable(snID_Process, "sFileName_XML_SWinEd_Answer");
         String saName_Attach_Dfs_Value = (String) runtimeService.getVariable(snID_Process, "saName_Attach_Dfs");
-        LOG.info("saName_Attach_Dfs: " + saName_Attach_Dfs_Value);
+        LOG.debug("saName_Attach_Dfs: " + saName_Attach_Dfs_Value);
         String saName_Attach_Dfs = "";
         boolean bExist_Attach_Dfs_Answer = false;
         try {
@@ -86,9 +86,9 @@ public class DfsService {
             if (oAttachment_Document != null) {
                 String sID_Order = generalConfig.getOrderId_ByProcess(Long.valueOf(snID_Process));
                 String sAttachmentName_Document = oAttachment_Document.getName();
-                LOG.info("sAttachmentName_Document=" + sAttachmentName_Document + ", sID_Order=" + sID_Order);
+                LOG.info("getAnswer sAttachmentName_Document=" + sAttachmentName_Document + ", sID_Order=" + sID_Order);
                 sAttachmentName_Document = sAttachmentName_Document.replaceAll(".xml", "");
-
+                
                 for (ByteArrayMultipartFile oByteArrayMultipartFile : aByteArrayMultipartFile) {
                     String sFileName = oByteArrayMultipartFile.getOriginalFilename();
                     String sFileContentType = oByteArrayMultipartFile.getContentType() + ";" + oByteArrayMultipartFile.getExp();
@@ -96,13 +96,17 @@ public class DfsService {
                             || (bExist_Attach_Dfs_Answer = sFileName.contains(sFileName_XML_SWinEd_Answer_Value))) { //"F1401801"
                         LOG.info("ToAttach-PROCESS Found sFileName=" + sFileName + " sAttachmentName_Document=" + sAttachmentName_Document);
                         LOG.info("ToAttach-PROCESS saName_Attach_Dfs_Value=" + saName_Attach_Dfs_Value + " saName_Attach_Dfs=" + saName_Attach_Dfs);
+                        LOG.info("bExist_Attach_Dfs_Answer=" + bExist_Attach_Dfs_Answer);
+                        
                         if (saName_Attach_Dfs_Value == null || !saName_Attach_Dfs_Value.contains(sFileName)) {
+                            LOG.info("sFile_XML_SWinEd_Filter is: {}", sFile_XML_SWinEd_Filter);
                             if (sFile_XML_SWinEd_Filter == null 
                                     || "".equalsIgnoreCase(sFile_XML_SWinEd_Filter.trim()) 
                                     || sFileName.contains(sFile_XML_SWinEd_Filter)) {
                                 saName_Attach_Dfs = saName_Attach_Dfs + sFileName + ",";
                                 Attachment oAttachment = taskService.createAttachment(sFileContentType,
                                         sID_Task, snID_Process, sFileName, oByteArrayMultipartFile.getName(), oByteArrayMultipartFile.getInputStream());
+                                LOG.info("oAttachment {}", oAttachment);
                                 if (oAttachment != null) {
                                     asID_Attach_Dfs.append(oAttachment.getId()).append(",");
                                     LOG.info("oAttachment.getId()=" + oAttachment.getId());
@@ -319,7 +323,7 @@ public class DfsService {
             for (int i = 0; i < length; i++) {
                 Node nodeId = nodeList.item(i);
                 result.add(nodeId.getTextContent());
-                LOG.info("nodeId.value: " + nodeId.getNodeValue() + " nodeId.getAttributes: " + nodeId.getAttributes().getLength()
+                LOG.debug("nodeId.value: " + nodeId.getNodeValue() + " nodeId.getAttributes: " + nodeId.getAttributes().getLength()
                         + " nodeId.getTextContent: " + nodeId.getTextContent() + " nodeId.getNodeName(): " + nodeId.getNodeName());
             }
         } catch (ParserConfigurationException | SAXException | IOException e) {

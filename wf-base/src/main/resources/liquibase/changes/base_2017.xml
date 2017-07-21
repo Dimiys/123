@@ -590,18 +590,164 @@
         
     </changeSet>
     
-    <changeSet id="modify-type-of-sValueNew " author="Elena">
+     <changeSet id="issue-1553-modify DataType sValueNew" author="Elena">
+        <modifyDataType tableName="SubjectMessageQuestionField" columnName="sValueNew" newDataType="varchar(6000)" />
+     </changeSet>
+        
+      <changeSet id="issue-1553-modify DataType Values" author="Elena">
+        <modifyDataType tableName="SubjectMessageQuestionField" columnName="sValue" newDataType="varchar(6000)" />
+        <modifyDataType tableName="SubjectMessageQuestionField" columnName="sNotify" newDataType="varchar(6000)" />
+       </changeSet>
+       
+       
+       <changeSet id="issue-1553-modify DataType Values to clob" author="Elena"  failOnError="false">
+        <modifyDataType tableName="SubjectMessageQuestionField" columnName="sValue" newDataType="clob" />
         <modifyDataType tableName="SubjectMessageQuestionField" columnName="sValueNew" newDataType="clob" />
-    </changeSet>
-    
-    <changeSet id="modify-type-of-sNotify " author="Elena">
         <modifyDataType tableName="SubjectMessageQuestionField" columnName="sNotify" newDataType="clob" />
-    </changeSet>
-         
-    <changeSet id="issue-1553-add number DataType Values" author="Elena">
+       </changeSet>
+       
+       <changeSet id="issue-1553-reverse modify DataType Values to clob" author="Elena">
+        <modifyDataType tableName="SubjectMessageQuestionField" columnName="sValue" newDataType="varchar(500)" />
+        <modifyDataType tableName="SubjectMessageQuestionField" columnName="sValueNew" newDataType="varchar(500)" />
+        <modifyDataType tableName="SubjectMessageQuestionField" columnName="sNotify" newDataType="varchar(500)" />
+       </changeSet>
+       
+       <changeSet id="issue-1553-add number DataType Values" author="Elena">
         <modifyDataType tableName="SubjectMessageQuestionField" columnName="sValue" newDataType="varchar(6000)" />
         <modifyDataType tableName="SubjectMessageQuestionField" columnName="sValueNew" newDataType="varchar(6000)" />
         <modifyDataType tableName="SubjectMessageQuestionField" columnName="sNotify" newDataType="varchar(6000)" />
-    </changeSet>
-         
+       </changeSet>
+       
+       <changeSet id="issue-1668-add-new-column" author="Ivan Denysenko">
+           <addColumn tableName="ProcessSubject">
+               <column name="snID_Task_Activiti" type="varchar(255)">
+                   <constraints nullable="true"/>
+               </column>
+           </addColumn>
+       </changeSet>
+       
+       <changeSet id="issue-1612-add-new-column" author="Elena"  failOnError="false">
+           <addColumn tableName="HistoryEvent_Service">
+               <column name="sID_Public_SubjectOrganJoin" type="varchar(255)">
+                   <constraints nullable="true"/>
+               </column>
+           </addColumn>
+        </changeSet>
+    
+    <changeSet id="issue-1661-add-new-entity-and-colums" author="Kovylin Yegor">
+        
+        <createTable tableName="DocumentSubjectRightPermition">
+            <column name="nID" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="nID_DocumentStepSubjectRight" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="PermitionType" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sKeyGroupeSource" type="varchar(255)">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+        
+        <addForeignKeyConstraint constraintName="FK_DocumentSubjectRightPermition_DocumentStepSubjectRight" 
+                                 baseColumnNames="nID_DocumentStepSubjectRight" 
+                                 baseTableName="DocumentSubjectRightPermition"
+                                 referencedTableName="DocumentStepSubjectRight" 
+                                 referencedColumnNames="nID"/>
+        </changeSet>   
+        
+        <changeSet id="issue-1661-drop-not-nullable-for-bWrite" author="Kovylin Yegor">
+            <dropNotNullConstraint  columnDataType="boolean"
+                                    columnName="bWrite"
+                                    tableName="DocumentStepSubjectRight"/>
+        </changeSet>    
+        
+        <changeSet id="issue-1718-add-new-column" author="Kovylin Yegor">
+           <addColumn tableName="ProcessSubjectTask">
+               <column name="sKey" type="varchar(255)">
+                   <constraints nullable="true"/>
+               </column>
+           </addColumn>
+       </changeSet>        
+       
+        <changeSet id="issue-2-iProject-add-new-entity" author="Kovylin Yegor">
+        
+            <createTable tableName="DocumentImageFile">
+                <column name="nID" type="bigint">
+                    <constraints primaryKey="true" nullable="false"/>
+                </column>
+                <column name="sHash" type="varchar(255)">
+                    <constraints nullable="true"/>
+                </column>
+                <column name="sSecret" type="varchar(255)">
+                    <constraints nullable="true"/>
+                </column>
+                <column name="sKey_File" type="varchar(255)">
+                    <constraints nullable="true"/>
+                </column>
+                <column name="sID_FileStorage" type="varchar(255)">
+                    <constraints nullable="true"/>
+                </column>
+                <column name="sFileType" type="varchar(255)">
+                    <constraints nullable="true"/>
+                </column>
+                <column name="sFileExtension" type="varchar(255)">
+                    <constraints nullable="true"/>
+                </column>
+                <column name="nBytes" type="bigint">
+                    <constraints nullable="true"/>
+                </column>
+                <column name="sDateSave" type="varchar(255)">
+                    <constraints nullable="true"/>
+                </column>
+            </createTable>
+            
+            <createTable tableName="DocumentImageFileSign">
+                <column name="nID" type="bigint">
+                    <constraints primaryKey="true" nullable="false"/>
+                </column>
+                <column name="nID_DocumentImageFile" type="bigint">
+                    <constraints nullable="true"/>
+                </column>
+                <column name="sSign" type="varchar(400)">
+                    <constraints nullable="true"/>
+                </column>
+                <column name="nID_SignType" type="bigint">
+                    <constraints nullable="true"/>
+                </column>
+                <column name="sSignData_JSON" type="varchar(5000)">
+                    <constraints nullable="true"/>
+                </column>
+            </createTable>
+            
+            <createTable tableName="SignType">
+                <column name="nID" type="bigint">
+                    <constraints primaryKey="true" nullable="false"/>
+                </column>
+                <column name="sID" type="varchar(200)">
+                    <constraints nullable="true"/>
+                </column>
+                <column name="sName" type="varchar(200)">
+                    <constraints nullable="true"/>
+                </column>
+                <column name="sNote" type="varchar(1000)">
+                    <constraints nullable="true"/>
+                </column>
+                <column name="sClass" type="varchar(255)">
+                    <constraints nullable="true"/>
+                </column>
+            </createTable>
+            
+            <addForeignKeyConstraint constraintName="FK_DocumentImageFile_DocumentImageFileSign" referencedTableName="DocumentImageFile"
+                                 baseColumnNames="nID_DocumentImageFile" baseTableName="DocumentImageFileSign" 
+                                 referencedColumnNames="nID"/>
+            
+            <addForeignKeyConstraint constraintName="FK_SignType_DocumentImageFileSign" referencedTableName="SignType"
+                                 baseColumnNames="nID_SignType" baseTableName="DocumentImageFileSign" 
+                                 referencedColumnNames="nID"/>
+    
+        </changeSet>                           
+                                        
 </databaseChangeLog>

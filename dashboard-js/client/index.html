@@ -19,6 +19,7 @@
       <link rel="stylesheet" href="bower_components/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css" />
       <link rel="stylesheet" href="bower_components/textAngular/dist/textAngular.css" />
       <link rel="stylesheet" href="bower_components/spectrum/spectrum.css" />
+      <link rel="stylesheet" href="bower_components/angular-snap/angular-snap.css" />
       <!-- endbower -->
     <!-- endbuild -->
     <!-- build:css({.tmp,client}) app/app.css -->
@@ -31,9 +32,13 @@
       <link rel="stylesheet" href="app/reports/reports.css">
       <link rel="stylesheet" href="app/services/services.css">
       <link rel="stylesheet" href="app/tasks/tasks.css">
+      <link rel="stylesheet" href="components/issueBlock/issue.style.css">
       <link rel="stylesheet" href="components/modal/modal.css">
+      <link rel="stylesheet" href="components/navbar/_navbar.css">
       <link rel="stylesheet" href="components/navbar/navbar.css">
       <link rel="stylesheet" href="components/print/PrintModal.css">
+      <link rel="stylesheet" href="components/scanner/scanner.css">
+      <link rel="stylesheet" href="components/search-box/search-box.styles.css">
       <link rel="stylesheet" href="components/table/style.css">
       <link rel="stylesheet" href="components/todo/todo.css">
       <link rel="stylesheet" href="components/usersHierarchyModal/tree.style.css">
@@ -54,7 +59,7 @@
     <![endif]-->
     <!-- build:js({client,node_modules}) app/vendor.js -->
       <!-- bower:js -->
-      <script src="bower_components/jquery/dist/jquery.js"></script>
+      <script src="bower_components/jquery/jquery.js"></script>
       <script src="bower_components/angular/angular.js"></script>
       <script src="bower_components/angular-base64/angular-base64.js"></script>
       <script src="bower_components/angular-md5/angular-md5.js"></script>
@@ -89,6 +94,8 @@
       <script src="bower_components/textAngular/dist/textAngularSetup.js"></script>
       <script src="bower_components/spectrum/spectrum.js"></script>
       <script src="bower_components/angular-spectrum-colorpicker/dist/angular-spectrum-colorpicker.min.js"></script>
+      <script src="bower_components/snapjs/snap.js"></script>
+      <script src="bower_components/angular-snap/angular-snap.js"></script>
       <!-- endbower -->
     <!-- endbuild -->
 
@@ -148,9 +155,10 @@
           <script src="app/task/task.js"></script>
           <script src="app/tasks/clarify.directive.js"></script>
           <script src="app/tasks/createTask.controller.js"></script>
+          <script src="app/tasks/createView.controller.js"></script>
+          <script src="app/tasks/dateDivider.directive.js"></script>
           <script src="app/tasks/dialogs/signInfoDialog.directive.js"></script>
           <script src="app/tasks/dialogs/signInfoDialogContent.directive.js"></script>
-          <script src="app/tasks/edsView.controller.js"></script>
           <script src="app/tasks/form-buttons/printDialog.directive.js"></script>
           <script src="app/tasks/form-buttons/putToWorkButton.directive.js"></script>
           <script src="app/tasks/form-buttons/submitTaskButton.js"></script>
@@ -167,6 +175,9 @@
           <script src="app/tasks/form-fields/tableField.directive.js"></script>
           <script src="app/tasks/form-fields/textAreaField.directive.js"></script>
           <script src="app/tasks/form-fields/userField.directive.js"></script>
+          <script src="app/tasks/fulfillment.controller.js"></script>
+          <script src="app/tasks/history.controller.js"></script>
+          <script src="app/tasks/services/fields.service.js"></script>
           <script src="app/tasks/taskView.controller.js"></script>
           <script src="app/tasks/tasks.controller.js"></script>
           <script src="app/tasks/tasks.js"></script>
@@ -186,6 +197,8 @@
           <script src="components/deploy/deploy.service.js"></script>
           <script src="components/directives/checkboxIndeterminate.directive.js"></script>
           <script src="components/directives/igovFocusIf.js"></script>
+          <script src="components/document/document.service.js"></script>
+          <script src="components/document/documentFilter.service.js"></script>
           <script src="components/eds/signDialog.js"></script>
           <script src="components/eds/signService.js"></script>
           <script src="components/env/env.config.service.js"></script>
@@ -199,6 +212,9 @@
           <script src="components/httpInterceptors/errorInterceptors.js"></script>
           <script src="components/httpInterceptors/httpProvider.config.js"></script>
           <script src="components/igovWhenScrolled/igovWhenScrolled.directive.js"></script>
+          <script src="components/issueBlock/issue.directive.js"></script>
+          <script src="components/issueBlock/issue.service.js"></script>
+          <script src="components/issueBlock/issueForRead.directive.js"></script>
           <script src="components/listTreeMin/eaTreeView-tpls.min.js"></script>
           <script src="components/listTreeMin/eaTreeView.min.js"></script>
           <script src="components/modal/modal.service.js"></script>
@@ -210,6 +226,9 @@
           <script src="components/process/process.service.js"></script>
           <script src="components/profile/profile.service.js"></script>
           <script src="components/report/reports.service.js"></script>
+          <script src="components/scanner/scanner.ctrl.js"></script>
+          <script src="components/scanner/scanner.service.js"></script>
+          <script src="components/search-box/search-box.directive.js"></script>
           <script src="components/services/bp_schedule.service.js"></script>
           <script src="components/services/schedule.service.js"></script>
           <script src="components/table/table.directive.js"></script>

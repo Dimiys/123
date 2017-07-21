@@ -89,22 +89,18 @@ angular.module('app').directive('slotPicker', function($http, dialogs, ErrorsFac
             }).
             error(function(data, status, headers, config) {
               console.error('Error reserved slot ' + angular.toJson(data));
-              var err = data.message.split(": response=");
+              var err = data.message ? data.message.split(": response=") : [];
               if(data.message.indexOf('api.cherg.net') >= 0 && err[1]){
-                var needReload = false;
-                if(data.message.indexOf('Время уже занято') >= 0){
-                  needReload = true;
-                  dialogs.error('Помилка', 'Неможливо вибрати час. Спробуйте обрати інший або пізніше, будь ласка')
+                if(data.message.indexOf('Время уже занято') >= 0 || data.message.indexOf('Обраний Вами час вже заброньовано') >= 0){
+                  dialogs.error('Помилка', 'Обраний Вами час вже недоступний. Повторіть, будь ласка, спробу пізніше або оберіть інший час та дату.')
                 } else {
                   dialogs.error('Помилка', err[1])
                 }
-                scope.selected.slot = null;
-                if(needReload){
-                  scope.loadList();
-                }
               } else {
-                dialogs.error('Помилка', data.message);
+                dialogs.error('Помилка', data.message ? data.message : angular.toJson(data));
               }
+              scope.selected.slot = null;
+              scope.loadList();
             });
           }
         } else if (isQueueDataType.iGov) {
@@ -262,7 +258,7 @@ angular.module('app').directive('slotPicker', function($http, dialogs, ErrorsFac
           if (nDiffDaysForStartDateParam && parseInt(nDiffDaysForStartDateParam.value) > 0) {
             data.nDiffDaysForStartDate = nDiffDaysForStartDateParam.value;
           }
-          
+
 
 
           sURL = '/api/service/flow/' + scope.serviceData.nID;

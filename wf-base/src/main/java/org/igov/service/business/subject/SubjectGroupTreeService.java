@@ -15,8 +15,6 @@ import java.util.Set;
 
 import org.activiti.engine.IdentityService;
 import org.activiti.engine.identity.User;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.igov.model.core.BaseEntityDao;
 import org.igov.model.subject.SubjectGroup;
 import org.igov.model.subject.SubjectGroupResultTree;
@@ -74,10 +72,10 @@ public class SubjectGroupTreeService {
 
     @Autowired
     private SubjectOrganDao SubjectOrganDao;
-    
+
     @Autowired
     private SubjectGroupDao SubjectGroupDao;
-    
+
     @Autowired
     private SubjectGroupTreeDao SubjectGroupTreeDao;
 
@@ -91,7 +89,7 @@ public class SubjectGroupTreeService {
     public SubjectGroupResultTree getCatalogSubjectGroupsTree(String sID_Group_Activiti,
             Long deepLevel, String sFind, Boolean bIncludeRoot, Long deepLevelWidth,
             String sSubjectType) {
-
+        
         /**
          * Лист для ид Subject ORGAN или HUMAN для последующего анализа
          */
@@ -184,7 +182,7 @@ public class SubjectGroupTreeService {
             for (SubjectGroupTree subjectGroupRelation : subjectGroupRelations) {
 
                 SubjectGroup parent = subjectGroupRelation.getoSubjectGroup_Parent();
-                LOG.info("SubjectGroup parent" + parent);
+                LOG.info("SubjectGroup parent is: " + parent.getsID_Group_Activiti());
 
                 if (parent.getId() != FAKE_ROOT_SUBJECT_ID) {
                     LOG.info("SubjectGroup parent" + parent.getsID_Group_Activiti());
@@ -227,14 +225,13 @@ public class SubjectGroupTreeService {
 
             }
 
-            // Map<Long, List<SubjectGroup>> subjToNodeMapFiltr = new HashMap<>();
             // достаем ид sID_Group_Activiti которое на вход
+            LOG.info("sID_Group_Activiti for tree is {}", sID_Group_Activiti);
             Long groupFiltr = mapGroupActiviti.get(sID_Group_Activiti);
             LOG.info("sID_Group_Activiti index: " + groupFiltr);
             // детей его детей
             List<SubjectGroup> children = new ArrayList<>();
 
-            List<Long> idChildren = new ArrayList<>();
             if (isDisplayRootElement(bIncludeRoot)) {
                 SubjectGroup rootSubjectGroup = getRootSubjectGroup(parentChildren, groupFiltr);
                 children.add(rootSubjectGroup);
@@ -242,13 +239,13 @@ public class SubjectGroupTreeService {
                 // детей его детей
                 children = subjToNodeMap.get(groupFiltr);
             }
-            LOG.info("children.size: " + children.size());
+            //LOG.info("children.size: " + children.size());
             Map<Long, List<SubjectGroup>> hierarchyProcessSubject = new HashMap<>();
             // children полный список первого уровня
             if (children != null && !children.isEmpty()) {
 
                 // получаем только ид чилдренов полного списка детей первого уровня
-                idChildren = Lists
+                List<Long> idChildren = Lists
                         .newArrayList(Collections2.transform(children, new Function<SubjectGroup, Long>() {
                             @Override
                             public Long apply(SubjectGroup subjectGroup) {
@@ -258,20 +255,20 @@ public class SubjectGroupTreeService {
                 aChildResult.addAll(children);
                 LOG.info("idChildren.size: " + idChildren.size());
                 hierarchyProcessSubject = getChildrenTree(children, idChildren, subjToNodeMap, idParentList, checkDeepLevel(deepLevel), 1, aChildResult);
-                LOG.info("hierarchyProcessSubject" + hierarchyProcessSubject);
+                //LOG.info("hierarchyProcessSubject" + hierarchyProcessSubject);
             }
 
-            LOG.info("aChildResult {}", aChildResult);
-            
+            //LOG.info("aChildResult {}", aChildResult);
+
             List<SubjectGroup> aChildResultByUser = new ArrayList<>();
-            
-            if(HUMAN.equals(sSubjectType)){
+
+            if (HUMAN.equals(sSubjectType)) {
                 aChildResultByUser = filtrChildResultByUser_Human(sFind, aChildResult);
             }
-            if(ORGAN.equals(sSubjectType)){
+            if (ORGAN.equals(sSubjectType)) {
                 aChildResultByUser = filtrChildResultByUser_Organ(sFind, aChildResult);
             }
-            
+
             LOG.info("aChildResultByUser {}", aChildResultByUser);
 
             List<SubjectGroup> resultTree;
@@ -296,83 +293,111 @@ public class SubjectGroupTreeService {
             }
 
             LOG.info("processSubjectResultTree" + processSubjectResultTree);
-
-            /**
-             * isSubjectType =true- был на вход тип орган или хьман, лист не
-             * пустой с ид Subject органа или хьманов, лист содержит groupFiltr
-             * возвращаем ответ, иначе ничего не возвращаем
-             */
-            /*if (isSubjectType && !resSubjectTypeList.isEmpty() 
-                    && resSubjectTypeList.contains(groupFiltr)) {
-                LOG.info("processSubjectResultTree isSubjectType " + processSubjectResultTree);
-                return processSubjectResultTree;
-            } else if (!isSubjectType) {
-                LOG.info("processSubjectResultTree !isSubjectType " + processSubjectResultTree);
-                return processSubjectResultTree;
-            } else {
-                SubjectGroupResultTree processSubjectResultTreeRes = new SubjectGroupResultTree();
-                return processSubjectResultTreeRes;
-            }*/
         }
 
         return processSubjectResultTree;
 
     }
+
+    public List<SubjectGroup> getSubjectGroupsTreeUp(final String sID_Group_Activiti, final String sSubjectType) {
+        return getSubjectGroupsTreeUp(sID_Group_Activiti, sSubjectType, null);
+    }
     
- /**
+    /**
      * Сервис для получения департамента по идентификатору группы.
      *
      * @param sID_Group_Activiti - идентификатор группы
-     * @param sSubjectType - Тип выборки: Organ- иерархия в разрезе органы,  Human -иерархия в разрезе людей
-     * @return aSubjectGroupParent - лист который содержит в себе SubjectGroup родительских департаментов
+     * @param sSubjectType - Тип выборки: Organ- иерархия в разрезе органы,
+     * Human -иерархия в разрезе людей
+     * @param nDeepLevel - 1: получаем родителя на уровень выше, 0: получаем самого верхнего родителя, null: получаем 
+     * @return aSubjectGroupParent - лист который содержит в себе SubjectGroup
+     * родительских департаментов
      *
      * @see SubjectGroup
      * @see SubjectGroupTree
      */
-    public List<SubjectGroup> getSubjectGroupsTreeUp(final String sID_Group_Activiti, final String sSubjectType) {
-        
-        List<SubjectGroup> aSubjectGroupParent = new ArrayList<>();
+    public List<SubjectGroup> getSubjectGroupsTreeUp(final String sID_Group_Activiti, final String sSubjectType, final Long nDeepLevel) {
 
-        String sSubjectTypeToFind;
+        List<SubjectGroup> aSubjectGroupResult = new ArrayList<>();
         
-        sSubjectTypeToFind = sSubjectType;
-        
-        if (sSubjectTypeToFind == null) {
-            
-            sSubjectTypeToFind = getSubjectType(sID_Group_Activiti);
-        }
-        
-        //Получили все SubjectGroup, которые относятся к группе sID_Group_Activiti
-        List<SubjectGroup> aSubjectGroup = SubjectGroupDao.findAllBy("sID_Group_Activiti", sID_Group_Activiti);
-        LOG.info("aSubjectGroup consist: " + "size: " + aSubjectGroup.size() + ", " + aSubjectGroup.toString());
-        
-        for (SubjectGroup oSubjectGroup : aSubjectGroup) {
-            
-            //ID для которого ищем департаменты, которым он подчиняется
-            Long nID = oSubjectGroup.getoSubject().getId();
-            
-            //Получаем SubjectGroupTree у которых oSubjectGroup_Child равны nID
-            List<SubjectGroupTree> aSubjectGroupTree = SubjectGroupTreeDao.findAllBy("oSubjectGroup_Child.id", nID);
-            LOG.info("aSubjectGroup consist: " + "size: " + aSubjectGroupTree.size() + ", " + aSubjectGroupTree.toString());
-                        
-            for (SubjectGroupTree oSubjectGroupTree : aSubjectGroupTree) {
-                               
-                SubjectGroup oSubjectGroup_Parent = oSubjectGroupTree.getoSubjectGroup_Parent();
+        //Получить SubjectGroup, который относятся к группе sID_Group_Activiti
+        Optional<SubjectGroup> oSubjectGroup = SubjectGroupDao.findBy("sID_Group_Activiti", sID_Group_Activiti);
+        LOG.info("aSubjectGroup consist: size={}, {}", oSubjectGroup, oSubjectGroup.toString());
+                              
+        LOG.info("getSubjectGroupsTreeUp nDeepLevel: {}", nDeepLevel);       
+        if (oSubjectGroup.isPresent()) {
+            if (nDeepLevel == null || nDeepLevel == 1){
+                //ID для которого ищем департаменты, которым он подчиняется
+                Long nID = oSubjectGroup.get().getId(); 
+                //Получаем SubjectGroupTree у которых oSubjectGroup_Child равны nID
+                List<SubjectGroupTree> aSubjectGroupTree = SubjectGroupTreeDao.findAllBy("oSubjectGroup_Child.id", nID);
+                LOG.info("aSubjectGroupTree size={}, {}",  aSubjectGroupTree.size(), aSubjectGroupTree.toString());
+
+                for (SubjectGroupTree oSubjectGroupTree : aSubjectGroupTree) {     
                 
-                if (getSubjectType(oSubjectGroup_Parent.getsID_Group_Activiti()).equals(sSubjectTypeToFind)) {
-                  
-                    aSubjectGroupParent.add(oSubjectGroup_Parent);
+                    SubjectGroup oSubjectGroup_Parent = oSubjectGroupTree.getoSubjectGroup_Parent();
+                    LOG.info("oSubjectGroup_Parent={}", oSubjectGroup_Parent);
+                
+                    String sSubjectGroup_ParentType = getSubjectType(oSubjectGroup_Parent.getsID_Group_Activiti());
+                    if(sSubjectType == null || sSubjectGroup_ParentType.equalsIgnoreCase(sSubjectType)){
+                        aSubjectGroupResult.add(oSubjectGroup_Parent);
+                    }
                 }
+                LOG.info("aSubjectGroupResult: " + aSubjectGroupResult.toString());               
             }
-              
-            LOG.info("aSubjectGroupParent: " + aSubjectGroupParent.toString());
-            
-        }
-
-        return aSubjectGroupParent;
+            else if (nDeepLevel == 0){              
+                
+                String sChain = oSubjectGroup.get().getsChain();
+                LOG.info("getSubjectGroupsTreeUp sChain: "+sChain);              
+                
+                List<SubjectGroup> oSubjectGroupRoot = SubjectGroupDao.findAllBy("sID_Group_Activiti", sChain);
+                LOG.info("oSubjectGroupRoot size={}, {}",  oSubjectGroupRoot.size(), oSubjectGroupRoot.toString());
+                                
+                if (sSubjectType == null){
+                    aSubjectGroupResult.addAll(oSubjectGroupRoot);                   
+                
+                    for (SubjectGroup oSubjectGroupParent : oSubjectGroupRoot) {
+                        List<SubjectGroupTree> aSubjectGroupRoot = SubjectGroupTreeDao.
+                                findAllBy("oSubjectGroup_Parent.id", oSubjectGroupParent.getId());
+                        LOG.info("oSubjectGroup_Parent={}", aSubjectGroupRoot);
+                    
+                        for (SubjectGroupTree oSubjectGroupTree : aSubjectGroupRoot) {
+                            SubjectGroup oSubjcetGroupChild = oSubjectGroupTree.getoSubjectGroup_Child();
+                            
+                            String sSubjectGroup_ChildType = getSubjectType(oSubjcetGroupChild.getsID_Group_Activiti());
+                            if(sSubjectGroup_ChildType.equalsIgnoreCase("Human")){
+                                aSubjectGroupResult.add(oSubjcetGroupChild);
+                            }
+                        }
+                    }
+                LOG.info("aSubjectGroupResult: " + aSubjectGroupResult.toString());
+                }
+                else if(sSubjectType.equals("Organ")){                   
+                    aSubjectGroupResult.addAll(oSubjectGroupRoot);
+                    LOG.info("aSubjectGroupResult: " + aSubjectGroupResult.toString());
+                }
+                else if (sSubjectType.equals("Human")){
+                
+                    for (SubjectGroup oSubjectGroupParent : oSubjectGroupRoot) {
+                        List<SubjectGroupTree> aSubjectGroupRoot = SubjectGroupTreeDao.
+                                findAllBy("oSubjectGroup_Parent.id", oSubjectGroupParent.getId());
+                        
+                        for (SubjectGroupTree oSubjectGroupTree : aSubjectGroupRoot) {
+                            SubjectGroup oSubjcetGroupChild = oSubjectGroupTree.getoSubjectGroup_Child();
+                            
+                            String sSubjectGroup_ChildType = getSubjectType(oSubjcetGroupChild.getsID_Group_Activiti());
+                            if(sSubjectGroup_ChildType.equalsIgnoreCase("Human")){
+                                aSubjectGroupResult.add(oSubjcetGroupChild);
+                            }
+                        }         
+                    }
+                    LOG.info("aSubjectGroupResult: " + aSubjectGroupResult.toString());
+                }                
+            }     
+        }               
+        return aSubjectGroupResult;
     }
-    
-    
+
 //------------------------------------------------------------------------------Дополнительные методы-----------------------------------------------------------------
     /**
      * Метод построения иерархии
@@ -397,20 +422,19 @@ public class SubjectGroupTreeService {
 
     private List<SubjectGroup> filtrChildResultByUser_Organ(String sFind, List<SubjectGroup> aChildResult) {
         List<SubjectGroup> aChildResultByUser = new ArrayList<>();
-        if (aChildResult != null) 
-        {
+        if (aChildResult != null) {
             if (sFind != null && !sFind.isEmpty()) {
-                for(SubjectGroup oSubjecetGroup : aChildResult){
-                   if(oSubjecetGroup.getName() != null && oSubjecetGroup.getName().toLowerCase().contains(sFind.toLowerCase())){
-                       aChildResultByUser.add(oSubjecetGroup);
-                   } 
-                } 
+                for (SubjectGroup oSubjecetGroup : aChildResult) {
+                    if (oSubjecetGroup.getName() != null && oSubjecetGroup.getName().toLowerCase().contains(sFind.toLowerCase())) {
+                        aChildResultByUser.add(oSubjecetGroup);
+                    }
+                }
             }
         }
-        
+
         return aChildResultByUser;
     }
-    
+
     /**
      * Метод получения отфильтрованного списка объектов по заданному условию
      * поиска
@@ -453,7 +477,7 @@ public class SubjectGroupTreeService {
                     // в отфильтрованном списке
                     LOG.info("sFindLogin {}", sFindLogin);
                     LOG.info("subjectGroup.getsID_Group_Activiti {}", subjectGroup.getsID_Group_Activiti());
-                    
+
                     if (sFindLogin.contains(subjectGroup.getsID_Group_Activiti())) {
                         aChildResultByUser.add(subjectGroup);
 
@@ -535,13 +559,14 @@ public class SubjectGroupTreeService {
      * @return
      */
     public List<SubjectUser> getUsersByGroupSubject(String sID_Group_Activiti) {
-
+        LOG.info("sID_Group_Activiti in getUsersByGroupSubject {}", sID_Group_Activiti);
         List<SubjectUser> amsUsers = new ArrayList<>();
         List<User> aoUsers = sID_Group_Activiti != null
                 ? identityService.createUserQuery().memberOfGroup(sID_Group_Activiti).list()
                 : identityService.createUserQuery().list();
-
+        
         for (User oUser : aoUsers) {
+            LOG.info("oUser Id in getUsersByGroupSubject: {}", oUser.getId());
             SubjectUser subjectUser = SubjectUser.BuilderHelper.buildSubjectUser(
                     oUser.getId() == null ? "" : oUser.getId(),
                     oUser.getFirstName() == null ? "" : oUser.getFirstName(),
@@ -607,28 +632,32 @@ public class SubjectGroupTreeService {
 
     public String getSubjectType(String sID_Group_Activiti) {
         try {
-            SubjectGroup oSubjectGroup = subjectGroupDao.findByExpected("sID_Group_Activiti", sID_Group_Activiti);
-            Subject oSubject = oSubjectGroup.getoSubject();
-            LOG.info("oSubjectGroup in getSubjectType is " + oSubject.getId());
+            Optional<SubjectGroup> oSubjectGroup = subjectGroupDao.findBy("sID_Group_Activiti", sID_Group_Activiti);
+            if (oSubjectGroup.isPresent()) {
+                Subject oSubject = oSubjectGroup.get().getoSubject();
+                LOG.info("oSubjectGroup in getSubjectType is " + oSubject.getId());
 
-            Optional<SubjectHuman> oSubjectHuman = SubjectHumanDao.findBy("oSubject", oSubject);
-            LOG.info("sID_Group_Activiti: {} oSubjectHuman isPresent: {}", sID_Group_Activiti, oSubjectHuman.isPresent());
+                Optional<SubjectHuman> oSubjectHuman = SubjectHumanDao.findBy("oSubject", oSubject);
+                LOG.info("sID_Group_Activiti: {} oSubjectHuman isPresent: {}", sID_Group_Activiti, oSubjectHuman.isPresent());
 
-            if (oSubjectHuman.isPresent()) {
-                return HUMAN;
-            } else {
-                Optional<SubjectOrgan> oSubjectOrgan = SubjectOrganDao.findBy("oSubject", oSubject);
-                LOG.info("sID_Group_Activiti: {} oSubjectOrgan isPresent: {}", sID_Group_Activiti, oSubjectOrgan.isPresent());
-                if (oSubjectOrgan.isPresent()) {
-                    return ORGAN;
+                if (oSubjectHuman.isPresent()) {
+                    return HUMAN;
                 } else {
-                    throw new RuntimeException("Can't find any SubjectHuman or SubjectOrgan for sID_Group_Activiti = "
-                            + sID_Group_Activiti + " Subject = " + oSubject.getId());
+                    Optional<SubjectOrgan> oSubjectOrgan = SubjectOrganDao.findBy("oSubject", oSubject);
+                    LOG.info("sID_Group_Activiti: {} oSubjectOrgan isPresent: {}", sID_Group_Activiti, oSubjectOrgan.isPresent());
+                    if (oSubjectOrgan.isPresent()) {
+                        return ORGAN;
+                    } else {
+                        throw new RuntimeException("Can't find any SubjectHuman or SubjectOrgan for sID_Group_Activiti = "
+                                + sID_Group_Activiti + " Subject = " + oSubject.getId());
 
+                    }
                 }
+            } else{
+                LOG.info("Can't find any SubjectGroup for sID_Group_Activiti = " + sID_Group_Activiti);
+                return "";
             }
         } catch (Exception oException) {
-            LOG.error("ERROR:" + oException.getMessage() + " (sID_Group_Activiti=" + sID_Group_Activiti + ")");
             LOG.error("ERROR: ", oException);
             throw oException;
         }

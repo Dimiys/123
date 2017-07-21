@@ -16,6 +16,7 @@
              ng-readonly="isFormPropertyDisabled(item)"
              ng-required="isRequired(item)"
              ng-model="item.value"
+             class="form-control"
              ng-class="{submitted: isRequired(item) && isTaskSubmitted()}"/>
 
       <!--field for OKPO search start-->
@@ -27,7 +28,7 @@
                ng-required="isRequired(item)"
                ng-class="{submitted: isRequired(item) && isTaskSubmitted()}"
                ng-change="getOrgData(item.value, item.id)"
-               class="okpo-field"
+               class="okpo-field form-control"
                ng-model-options="{debounce:1000}" />
         <span class="small-loading-okpo okpo-spinner"
               ng-if="orgIsLoading.status && orgIsLoading.field === item.id"></span>
@@ -75,4 +76,14 @@
   </div>
 </div>
 
-
+<div ng-if="item.sType && item.sType == 'string'" class="col-sm-12 form-field no-padding-left-right">
+  <div class="col-sm-6 task-form-title">
+    <label>{{sFieldLabel(item.sName)}}</label>
+  </div>
+  <div class="col-sm-6" style="padding-right: 0">
+    <span class="task-form-written-right-sight"
+          style="white-space: pre-line"
+          ng-model="item.oValue">{{item.oValue}}
+    </span>
+  </div>
+</div>
